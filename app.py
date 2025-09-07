@@ -5,7 +5,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
-from config import EMAIL_CONFIG
+try:
+    from config import EMAIL_CONFIG
+except ImportError:
+    from config_production import EMAIL_CONFIG
 
 app = Flask(__name__)
 
@@ -190,4 +193,5 @@ def enviar_datos():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
