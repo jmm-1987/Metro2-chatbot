@@ -108,6 +108,7 @@ itsdangerous==2.1.2
 click==8.1.7
 blinker==1.6.3
 email-validator==2.1.0
+gunicorn==21.2.0
 ```
 
 ## 🚨 Solución de Problemas
@@ -120,6 +121,7 @@ email-validator==2.1.0
 ### Error de Build
 - Verifica que `requirements.txt` esté en la raíz del proyecto
 - Asegúrate de que todos los archivos estén subidos a GitHub
+- Si ves "gunicorn: command not found", asegúrate de que `gunicorn==21.2.0` esté en requirements.txt
 
 ### Error de Puerto
 - Render asigna automáticamente el puerto
