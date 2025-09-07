@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Metro Cuadrado Mérida</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-content">
+                <div class="bot-avatar">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="header-info">
+                    <h3>Metro Cuadrado Mérida</h3>
+                    <span class="status">Asistente Virtual</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-minimize" onclick="toggleChat()">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="message-avatar">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="message-content">
+                    <p>¡Hola! Bienvenido a Metro Cuadrado Mérida. ¿En qué podemos ayudarte hoy?</p>
+                    <div class="message-time" id="welcomeTime"></div>
+                </div>
+            </div>
+            
+            <div class="options-container" id="mainOptions">
+                <div class="option-card" onclick="selectOption('vender')">
+                    <div class="option-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="option-content">
+                        <h4>Vender mi propiedad</h4>
+                        <p>Te ayudamos a vender tu propiedad al mejor precio</p>
+                    </div>
+                </div>
+                
+                <div class="option-card" onclick="selectOption('comprar')">
+                    <div class="option-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="option-content">
+                        <h4>Comprar propiedad</h4>
+                        <p>Encuentra la propiedad perfecta para ti</p>
+                    </div>
+                </div>
+                
+                <div class="option-card" onclick="selectOption('alquilar')">
+                    <div class="option-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="option-content">
+                        <h4>Alquilar propiedad</h4>
+                        <p>Encuentra el lugar perfecto para alquilar</p>
+                    </div>
+                </div>
+                
+                <div class="option-card" onclick="selectOption('alquilar_mi_propiedad')">
+                    <div class="option-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="option-content">
+                        <h4>Alquilar mi propiedad</h4>
+                        <p>Renta tu propiedad de forma segura</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <input type="text" id="messageInput" placeholder="Escribe tu consulta..." autocomplete="off">
+                <button id="sendButton" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="showFAQ()">
+                    <i class="fas fa-question-circle"></i>
+                    Preguntas Frecuentes
+                </button>
+                <button class="quick-btn" onclick="showContactInfo()">
+                    <i class="fas fa-phone"></i>
+                    Contacto
+                </button>
+                <button class="quick-btn" onclick="restartChat()">
+                    <i class="fas fa-redo"></i>
+                    Reiniciar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Preguntas Frecuentes -->
+    <div id="faqModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Preguntas Frecuentes</h3>
+                <span class="close" onclick="closeFAQ()">&times;</span>
+            </div>
+            <div class="modal-body" id="faqContent">
+                <!-- Las preguntas se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
