@@ -2,7 +2,7 @@
 import os
 
 # Puerto - Render requiere que se use la variable PORT
-port = os.environ.get('PORT', 5000)
+port = int(os.environ.get('PORT', 5000))
 bind = f"0.0.0.0:{port}"
 
 # Workers - Reducir para plan free
@@ -27,3 +27,6 @@ max_requests_jitter = 100
 
 # Keep alive
 keepalive = 2
+
+# Host y puerto explícitos
+host = "0.0.0.0"

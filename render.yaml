@@ -4,9 +4,9 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 30 app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 30 app:application
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.11.0
