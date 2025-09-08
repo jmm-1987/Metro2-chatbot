@@ -63,16 +63,21 @@ body {
 
 .header-info h3 {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.3px;
 }
 
 .status {
     font-size: 12px;
-    opacity: 0.8;
+    opacity: 0.9;
     display: flex;
     align-items: center;
     gap: 4px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.2px;
 }
 
 .status::before {
@@ -198,18 +203,23 @@ body {
     position: relative;
     color: #ffffff;
     border: 1px solid #d4af37;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    font-weight: 500;
 }
 
 .user-message .message-content {
     background: #d4af37;
     color: #000000;
     border: 1px solid #d4af37;
+    text-shadow: none;
+    font-weight: 600;
 }
 
 .message-content p {
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
     font-size: 14px;
+    letter-spacing: 0.3px;
 }
 
 .message-time {
@@ -217,10 +227,14 @@ body {
     color: #d4af37;
     margin-top: 4px;
     text-align: right;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .user-message .message-time {
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(0, 0, 0, 0.8);
+    text-shadow: none;
+    font-weight: 700;
 }
 
 /* Opciones */
@@ -264,15 +278,20 @@ body {
 
 .option-content h4 {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     color: #d4af37;
     margin-bottom: 2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.2px;
 }
 
 .option-content p {
     font-size: 12px;
     color: #ffffff;
     margin: 0;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    line-height: 1.4;
 }
 
 /* Input del chat */
@@ -280,6 +299,7 @@ body {
     padding: 20px;
     background: #1a1a1a;
     border-top: 2px solid #d4af37;
+    display: none; /* Oculto por defecto */
 }
 
 .input-wrapper {
@@ -298,6 +318,9 @@ body {
     transition: border-color 0.2s;
     background: #2a2a2a;
     color: #ffffff;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.2px;
 }
 
 #messageInput:focus {
@@ -306,6 +329,8 @@ body {
 
 #messageInput::placeholder {
     color: #d4af37;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 #sendButton {
@@ -355,6 +380,9 @@ body {
     flex: 1;
     min-width: 0;
     justify-content: center;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.1px;
 }
 
 .quick-btn:hover {
@@ -436,16 +464,21 @@ body {
 }
 
 .faq-question {
-    font-weight: 600;
+    font-weight: 700;
     color: #d4af37;
     margin-bottom: 8px;
     font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.2px;
 }
 
 .faq-answer {
     color: #ffffff;
-    line-height: 1.5;
+    line-height: 1.6;
     font-size: 13px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    letter-spacing: 0.1px;
 }
 
 /* Responsive */
@@ -552,8 +585,10 @@ body {
     display: block;
     color: #d4af37;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
     margin-bottom: 6px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.2px;
 }
 
 .form-group input,
@@ -568,6 +603,9 @@ body {
     font-family: inherit;
     transition: border-color 0.2s;
     box-sizing: border-box;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.2px;
 }
 
 .form-group input:focus,
@@ -579,7 +617,9 @@ body {
 .form-group input::placeholder,
 .form-group textarea::placeholder {
     color: #d4af37;
-    opacity: 0.7;
+    opacity: 0.8;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .form-group textarea {

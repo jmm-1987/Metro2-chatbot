@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
         welcomeTime.textContent = getCurrentTime();
     }
     
+    // Ocultar input por defecto
+    hideTextInput();
+    
     // Event listeners
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
@@ -69,6 +72,13 @@ async function sendMessage() {
     addUserMessage(message);
     messageInput.value = '';
     document.getElementById('sendButton').disabled = true;
+    
+    // Procesar datos según el paso actual
+    if (currentStep === 2) {
+        // Estamos en el paso de recolección de datos
+        processUserData(message);
+        return;
+    }
     
     // Mostrar indicador de escritura
     showTypingIndicator();
@@ -144,6 +154,7 @@ function handleBotResponse(data) {
         case 'bienvenida':
             addBotMessage(data.mensaje);
             showMainOptions(data.opciones);
+            hideTextInput(); // Ocultar input cuando hay opciones
             break;
             
         case 'opcion_seleccionada':
@@ -151,12 +162,19 @@ function handleBotResponse(data) {
             currentContext = data.contexto;
             if (data.opciones) {
                 showSubOptions(data.opciones);
+                hideTextInput(); // Ocultar input cuando hay opciones
             }
             break;
             
         case 'preguntas_frecuentes':
             addBotMessage(data.mensaje);
             showFAQContent(data.preguntas);
+            hideTextInput(); // Ocultar input cuando hay opciones
+            break;
+            
+        case 'solicitar_datos':
+            addBotMessage(data.mensaje);
+            showTextInput(); // Mostrar input cuando se solicitan datos
             break;
             
         case 'texto':
@@ -248,6 +266,7 @@ function showMainOptions(opciones) {
     });
     
     chatMessages.appendChild(optionsContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
     scrollToBottom();
 }
 
@@ -323,6 +342,7 @@ function showSubOptions(opciones) {
     });
     
     chatMessages.appendChild(optionsContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
     scrollToBottom();
 }
 
@@ -392,6 +412,7 @@ function showZoneOptions() {
     });
     
     chatMessages.appendChild(optionsContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
     scrollToBottom();
 }
 
@@ -424,8 +445,8 @@ function selectZone(zona) {
     
     addBotMessage(responseMessage);
     
-    // Mostrar formulario de datos
-    showDataForm();
+    // Mostrar input para solicitar datos específicos
+    showTextInput();
 }
 
 // Función para mostrar formulario de datos
@@ -657,6 +678,7 @@ function showFinalOptions() {
     });
     
     chatMessages.appendChild(optionsContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
     scrollToBottom();
 }
 
@@ -713,6 +735,7 @@ function showRestartOption() {
     restartCard.addEventListener('click', () => restartChat());
     
     chatMessages.appendChild(restartContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
     scrollToBottom();
 }
 
@@ -807,6 +830,7 @@ function showFAQContent(preguntas) {
     });
     
     chatMessages.appendChild(faqContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
     scrollToBottom();
 }
 
@@ -841,6 +865,7 @@ function showFAQAnswer(faq) {
         
         moreOptions.appendChild(moreCard);
         chatMessages.appendChild(moreOptions);
+        hideTextInput(); // Ocultar input cuando se muestran opciones
         scrollToBottom();
     }, 500);
 }
@@ -952,6 +977,97 @@ function scrollToLastBotMessage() {
     if (botMessages.length > 0) {
         const lastBotMessage = botMessages[botMessages.length - 1];
         scrollToMessage(lastBotMessage);
+    }
+}
+
+// Función para mostrar input de texto
+function showTextInput() {
+    const inputContainer = document.querySelector('.chat-input-container');
+    if (inputContainer) {
+        inputContainer.style.display = 'block';
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.focus();
+        }
+    }
+}
+
+// Función para ocultar input de texto
+function hideTextInput() {
+    const inputContainer = document.querySelector('.chat-input-container');
+    if (inputContainer) {
+        inputContainer.style.display = 'none';
+    }
+}
+
+// Función para procesar datos del usuario
+function processUserData(message) {
+    // Determinar qué dato estamos recolectando
+    if (!userData.nombre) {
+        userData.nombre = message;
+        addBotMessage(`Perfecto, ${message}. Ahora necesitamos tu número de teléfono.`);
+        return;
+    }
+    
+    if (!userData.telefono) {
+        userData.telefono = message;
+        addBotMessage(`Excelente. ¿Tienes un email donde podamos contactarte? (opcional)`);
+        return;
+    }
+    
+    if (!userData.email && message.toLowerCase() !== 'no' && message.toLowerCase() !== 'n/a') {
+        userData.email = message;
+        addBotMessage(`Muy bien. ¿Cuál es tu presupuesto aproximado?`);
+        return;
+    }
+    
+    if (!userData.presupuesto) {
+        userData.presupuesto = message;
+        addBotMessage(`Perfecto. ¿Hay algo más que quieras agregar en comentarios? (opcional)`);
+        return;
+    }
+    
+    if (!userData.comentarios && message.toLowerCase() !== 'no' && message.toLowerCase() !== 'nada') {
+        userData.comentarios = message;
+    }
+    
+    // Todos los datos recolectados, proceder con el envío
+    userData.tipo_consulta = getTipoConsultaTexto();
+    hideTextInput();
+    showTypingIndicator();
+    
+    // Simular envío de datos
+    setTimeout(() => {
+        hideTypingIndicator();
+        sendUserData();
+    }, 1500);
+}
+
+// Función para enviar datos del usuario
+async function sendUserData() {
+    try {
+        const response = await fetch('/api/enviar-datos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            addBotMessage(result.message);
+            setTimeout(() => {
+                showConsultaResumen();
+            }, 1000);
+        } else {
+            addBotMessage(result.message);
+        }
+        
+    } catch (error) {
+        addBotMessage('Error al enviar la consulta. Por favor, intenta de nuevo.');
+        console.error('Error:', error);
     }
 }
 
