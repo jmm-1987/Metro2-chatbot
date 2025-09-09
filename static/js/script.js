@@ -985,6 +985,15 @@ function showTextInput() {
     const inputContainer = document.querySelector('.chat-input-container');
     if (inputContainer) {
         inputContainer.style.display = 'block';
+        
+        // Restaurar el input wrapper
+        const inputWrapper = inputContainer.querySelector('.input-wrapper');
+        if (inputWrapper) inputWrapper.style.display = 'flex';
+        
+        // Restaurar las quick-actions
+        const quickActions = inputContainer.querySelector('.quick-actions');
+        if (quickActions) quickActions.style.display = 'flex';
+        
         const messageInput = document.getElementById('messageInput');
         if (messageInput) {
             messageInput.focus();
@@ -996,7 +1005,12 @@ function showTextInput() {
 function hideTextInput() {
     const inputContainer = document.querySelector('.chat-input-container');
     if (inputContainer) {
-        inputContainer.style.display = 'none';
+        // Solo ocultar el input y las quick-actions, pero mantener el botón de reiniciar en el header visible
+        const inputWrapper = inputContainer.querySelector('.input-wrapper');
+        const quickActions = inputContainer.querySelector('.quick-actions');
+        
+        if (inputWrapper) inputWrapper.style.display = 'none';
+        if (quickActions) quickActions.style.display = 'none';
     }
 }
 
