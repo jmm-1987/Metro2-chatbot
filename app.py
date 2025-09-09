@@ -103,19 +103,41 @@ def enviar_email(datos_usuario, tipo_consulta):
         
         msg.attach(MIMEText(cuerpo, 'plain'))
         
-        # Enviar email
-        if EMAIL_CONFIG['smtp_port'] == 465:
-            # Usar SSL para puerto 465 (IONOS)
-            server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
-        else:
-            # Usar STARTTLS para puerto 587 (Gmail, etc.)
-            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
-            server.starttls()
+        # Enviar email - Probar ambos puertos para IONOS
+        success = False
+        error_message = ""
         
-        server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
-        text = msg.as_string()
-        server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
-        server.quit()
+        # Intentar puerto 587 primero (STARTTLS)
+        try:
+            print("Intentando puerto 587 (STARTTLS)...")
+            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], 587)
+            server.starttls()
+            server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
+            text = msg.as_string()
+            server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
+            server.quit()
+            success = True
+            print("Email enviado exitosamente con puerto 587")
+        except Exception as e:
+            error_message = f"Puerto 587 falló: {e}"
+            print(error_message)
+            
+            # Intentar puerto 465 (SSL) como alternativa
+            try:
+                print("Intentando puerto 465 (SSL)...")
+                server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], 465)
+                server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
+                text = msg.as_string()
+                server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
+                server.quit()
+                success = True
+                print("Email enviado exitosamente con puerto 465")
+            except Exception as e2:
+                error_message = f"Ambos puertos fallaron. 587: {e}, 465: {e2}"
+                print(error_message)
+        
+        if not success:
+            raise Exception(error_message)
         
         return True
     except Exception as e:
