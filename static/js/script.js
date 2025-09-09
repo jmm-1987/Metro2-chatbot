@@ -430,7 +430,7 @@ function selectZone(zona) {
     
     switch (currentContext) {
         case 'vender':
-            responseMessage = `Excelente, zona ${zona}. Para continuar con la venta, necesitamos algunos datos adicionales. ¿Cuál es tu nombre completo?`;
+            responseMessage = `Excelente, zona ${zona}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso.¿Cuál es tu nombre completo?`;
             break;
         case 'comprar':
             responseMessage = `Perfecto, zona ${zona}. Para encontrar las mejores opciones, necesitamos algunos datos. ¿Cuál es tu nombre completo?`;
@@ -468,8 +468,8 @@ function showDataForm() {
                     <input type="tel" id="telefono" name="telefono" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email">
+                    <label for="email">Email (opcional)</label>
+                    <input type="email" id="email" name="email" placeholder="ejemplo@correo.com">
                 </div>
                 ${getPresupuestoField()}
                 <div class="form-group">
@@ -497,28 +497,28 @@ function getPresupuestoField() {
         case 'vender':
             return `
                 <div class="form-group">
-                    <label for="presupuesto">Precio estimado de venta</label>
+                    <label for="presupuesto">Precio estimado de venta (opcional)</label>
                     <input type="text" id="presupuesto" name="presupuesto" placeholder="Ej: $2,500,000">
                 </div>
             `;
         case 'comprar':
             return `
                 <div class="form-group">
-                    <label for="presupuesto">Presupuesto para compra</label>
+                    <label for="presupuesto">Presupuesto para compra (opcional)</label>
                     <input type="text" id="presupuesto" name="presupuesto" placeholder="Ej: $1,500,000 - $2,000,000">
                 </div>
             `;
         case 'alquilar':
             return `
                 <div class="form-group">
-                    <label for="presupuesto">Presupuesto mensual</label>
+                    <label for="presupuesto">Presupuesto mensual (opcional)</label>
                     <input type="text" id="presupuesto" name="presupuesto" placeholder="Ej: $8,000 - $12,000">
                 </div>
             `;
         case 'alquilar_mi_propiedad':
             return `
                 <div class="form-group">
-                    <label for="presupuesto">Renta mensual esperada</label>
+                    <label for="presupuesto">Renta mensual esperada (opcional)</label>
                     <input type="text" id="presupuesto" name="presupuesto" placeholder="Ej: $10,000 - $15,000">
                 </div>
             `;
@@ -1011,19 +1011,7 @@ function processUserData(message) {
     
     if (!userData.telefono) {
         userData.telefono = message;
-        addBotMessage(`Excelente. ¿Tienes un email donde podamos contactarte? (opcional)`);
-        return;
-    }
-    
-    if (!userData.email && message.toLowerCase() !== 'no' && message.toLowerCase() !== 'n/a') {
-        userData.email = message;
-        addBotMessage(`Muy bien. ¿Cuál es tu presupuesto aproximado?`);
-        return;
-    }
-    
-    if (!userData.presupuesto) {
-        userData.presupuesto = message;
-        addBotMessage(`Perfecto. ¿Hay algo más que quieras agregar en comentarios? (opcional)`);
+        addBotMessage(`Excelente. ¿Hay algo más que quieras agregar en comentarios? Puedes indicar la franja horaria en la que quieres que te llamemos o algún otro detalle que consideres importante.`);
         return;
     }
     

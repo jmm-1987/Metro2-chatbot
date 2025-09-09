@@ -4,9 +4,9 @@
 import os
 
 EMAIL_CONFIG = {
-    'smtp_server': 'smtp.gmail.com',
-    'smtp_port': 587,
-    'sender_email': os.getenv('EMAIL_USER', 'tu_email@gmail.com'),
+    'smtp_server': 'smtp.ionos.es',
+    'smtp_port': 465,  # Puerto SSL para IONOS
+    'sender_email': os.getenv('EMAIL_USER', 'tu_email@ionos.com'),
     'sender_password': os.getenv('EMAIL_PASSWORD', 'tu_password'),
     'recipient_email': 'jomma.tech@gmail.com'
 }
@@ -15,10 +15,10 @@ EMAIL_CONFIG = {
 # 1. Ve a tu servicio en Render Dashboard
 # 2. Ve a la sección "Environment"
 # 3. Agrega estas variables:
-#    - EMAIL_USER: tu_email@gmail.com
-#    - EMAIL_PASSWORD: tu_app_password_de_gmail
+#    - EMAIL_USER: tu_email@ionos.com
+#    - EMAIL_PASSWORD: tu_contraseña_de_ionos
 
-# Para Gmail, necesitarás:
-# 1. Habilitar la verificación en 2 pasos
-# 2. Generar una "Contraseña de aplicación" específica
-# 3. Usar esa contraseña en la variable EMAIL_PASSWORD
+# Para IONOS:
+# 1. Usa tu email completo de IONOS
+# 2. Usa tu contraseña normal de IONOS (no necesitas app password)
+# 3. El servidor SMTP es smtp.ionos.es con puerto 465 (SSL)

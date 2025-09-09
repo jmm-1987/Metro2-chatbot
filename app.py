@@ -18,25 +18,25 @@ opciones_principales = {
         "titulo": "Vender mi propiedad",
         "descripcion": "Te ayudamos a vender tu propiedad al mejor precio",
         "mensaje": "¡Excelente decisión! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?",
-        "opciones": ["Casa", "Departamento", "Terreno", "Local comercial", "Oficina"]
+        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
     },
     "comprar": {
         "titulo": "Comprar propiedad",
         "descripcion": "Encuentra la propiedad perfecta para ti",
         "mensaje": "¡Perfecto! Te ayudaremos a encontrar la propiedad ideal. ¿Qué tipo de propiedad buscas?",
-        "opciones": ["Casa", "Departamento", "Terreno", "Local comercial", "Oficina"]
+        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
     },
     "alquilar": {
         "titulo": "Alquilar propiedad",
         "descripcion": "Encuentra el lugar perfecto para alquilar",
         "mensaje": "¡Genial! Te ayudaremos a encontrar el lugar perfecto para alquilar. ¿Qué tipo de propiedad necesitas?",
-        "opciones": ["Casa", "Departamento", "Terreno", "Local comercial", "Oficina"]
+        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
     },
     "alquilar_mi_propiedad": {
         "titulo": "Alquilar mi propiedad",
         "descripcion": "Renta tu propiedad de forma segura",
         "mensaje": "¡Excelente! Te ayudaremos a alquilar tu propiedad. ¿Qué tipo de propiedad quieres alquilar?",
-        "opciones": ["Casa", "Departamento", "Terreno", "Local comercial", "Oficina"]
+        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
     }
 }
 
@@ -83,10 +83,10 @@ def enviar_email(datos_usuario, tipo_consulta):
         Datos del cliente:
         - Nombre: {datos_usuario.get('nombre', 'No proporcionado')}
         - Teléfono: {datos_usuario.get('telefono', 'No proporcionado')}
-        - Email: {datos_usuario.get('email', 'No proporcionado')}
+        - Email: {datos_usuario.get('email', 'No proporcionado') if datos_usuario.get('email') else 'No proporcionado'}
         - Tipo de propiedad: {datos_usuario.get('tipo_propiedad', 'No especificado')}
         - Zona: {datos_usuario.get('zona', 'No especificada')}
-        - Presupuesto: {datos_usuario.get('presupuesto', 'No especificado')}
+        - Presupuesto: {datos_usuario.get('presupuesto', 'No especificado') if datos_usuario.get('presupuesto') else 'No especificado'}
         - Comentarios adicionales: {datos_usuario.get('comentarios', 'Ninguno')}
         
         Por favor, contactar al cliente lo antes posible.
@@ -98,8 +98,14 @@ def enviar_email(datos_usuario, tipo_consulta):
         msg.attach(MIMEText(cuerpo, 'plain'))
         
         # Enviar email
-        server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
-        server.starttls()
+        if EMAIL_CONFIG['smtp_port'] == 465:
+            # Usar SSL para puerto 465 (IONOS)
+            server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
+        else:
+            # Usar STARTTLS para puerto 587 (Gmail, etc.)
+            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
+            server.starttls()
+        
         server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
         text = msg.as_string()
         server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
