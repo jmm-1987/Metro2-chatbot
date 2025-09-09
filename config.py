@@ -1,6 +1,8 @@
 # Configuración de Email para Metro Cuadrado Mérida
 # IMPORTANTE: Cambiar estas credenciales por las reales antes de usar en producción
 
+import os
+
 EMAIL_CONFIG = {
     'smtp_server': 'smtp.ionos.es',
     'smtp_port': 587,  # Puerto STARTTLS para IONOS (alternativa a 465)
