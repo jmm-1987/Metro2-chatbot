@@ -67,6 +67,12 @@ preguntas_frecuentes = [
 # Función para enviar email
 def enviar_email(datos_usuario, tipo_consulta):
     try:
+        print(f"Intentando enviar email con configuración:")
+        print(f"SMTP Server: {EMAIL_CONFIG['smtp_server']}")
+        print(f"SMTP Port: {EMAIL_CONFIG['smtp_port']}")
+        print(f"From: {EMAIL_CONFIG['sender_email']}")
+        print(f"To: {EMAIL_CONFIG['recipient_email']}")
+        
         # Crear mensaje
         msg = MIMEMultipart()
         msg['From'] = EMAIL_CONFIG['sender_email']
