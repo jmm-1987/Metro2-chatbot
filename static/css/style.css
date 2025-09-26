@@ -12,31 +12,32 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 0;
+    margin: 0;
 }
 
 /* Contenedor principal del chat */
 .chat-container {
-    width: 100%;
-    max-width: 450px;
-    height: 80vh;
-    max-height: 700px;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
     background: #2d2d2d;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    border: 2px solid #d4af37;
-    backdrop-filter: blur(10px);
+    border: none;
+    backdrop-filter: none;
 }
 
 /* Header del chat */
 .chat-header {
     background: #2b2a28;
     color: #d4af37;
-    padding: 10px 15px;
+    padding: 0px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -47,12 +48,12 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: -15px;
     flex: 1;
 }
 
 .bot-avatar {
-    width: 240px;
+    width: 280px;
     height: 90px;
     background: transparent;
     border-radius: 0;
@@ -181,9 +182,9 @@ body {
 .message {
     display: flex;
     gap: 12px;
-    max-width: 85%;
+    max-width: 100%;
     animation: slideIn 0.3s ease-out;
-    padding: 0 20px;
+    padding: 0 5px;
 }
 
 .message:first-child {
@@ -203,6 +204,7 @@ body {
 
 .bot-message {
     align-self: flex-start;
+    max-width: 100%;
 }
 
 .user-message {
@@ -525,21 +527,21 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
     body {
-        padding: 10px;
+        padding: 0;
     }
     
     .chat-container {
-        height: 90vh;
-        max-height: none;
-        border-radius: 16px;
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
     }
     
     .chat-header {
-        padding: 16px;
+        padding: 0px 15px;
     }
     
     .chat-messages {
-        padding: 16px;
+        padding: 0;
     }
     
     .chat-input-container {
@@ -547,7 +549,7 @@ body {
     }
     
     .modal-content {
-        margin: 10% auto;
+        margin: 5% auto;
         width: 95%;
     }
     
@@ -564,6 +566,7 @@ body {
 
 @media (max-width: 480px) {
     .chat-container {
+        width: 100vw;
         height: 100vh;
         border-radius: 0;
     }
