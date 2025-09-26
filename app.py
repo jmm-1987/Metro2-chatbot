@@ -17,8 +17,8 @@ opciones_principales = {
     "vender": {
         "titulo": "Vender mi propiedad",
         "descripcion": "Te ayudamos a vender tu propiedad al mejor precio",
-        "mensaje": "¡Excelente decisión! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?",
-        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
+        "mensaje": "Perfecto, estaremos encantados de ayudarte con el proceso de venta. ¿Necesitas información acerca de documentación y trámites necesarios?",
+        "opciones": ["Sí, quiero información", "Continuar con el proceso"]
     },
     "comprar": {
         "titulo": "Comprar propiedad",
@@ -40,12 +40,8 @@ opciones_principales = {
     }
 }
 
-# Preguntas frecuentes
+# Preguntas frecuentes generales
 preguntas_frecuentes = [
-    {
-        "pregunta": "¿Cuáles son los requisitos para vender una propiedad?",
-        "respuesta": "Para vender una propiedad necesitas: escritura pública, certificado de libertad de gravamen, pago de impuestos al día, y documentación personal (DNI, recibo de servicios). En Metro Cuadrado Mérida te asesoramos en todo el proceso."
-    },
     {
         "pregunta": "¿Cuánto tiempo toma el proceso de compra?",
         "respuesta": "El proceso de compra puede tomar entre 30 a 60 días hábiles, dependiendo de la documentación y trámites necesarios. Nuestro equipo te acompañará en cada paso."
@@ -64,12 +60,39 @@ preguntas_frecuentes = [
     }
 ]
 
+# Preguntas frecuentes específicas para vender propiedades
+preguntas_frecuentes_vender = [
+    {
+        "pregunta": "¿Cuáles son los requisitos para vender una propiedad?",
+        "respuesta": "Para vender una propiedad necesitas: escritura pública, certificado de libertad de gravamen, pago de impuestos al día, y documentación personal (DNI, recibo de servicios). En Metro Cuadrado Mérida te asesoramos en todo el proceso."
+    },
+    {
+        "pregunta": "¿Qué documentos necesito para vender mi casa?",
+        "respuesta": "Los documentos principales son: escritura de propiedad, certificado de libertad de gravamen, recibo de IBI al día, certificado energético, y documentación personal. Te ayudamos a obtener todo lo necesario."
+    },
+    {
+        "pregunta": "¿Cuánto tiempo tarda en venderse una propiedad?",
+        "respuesta": "El tiempo de venta depende del mercado y precio. En Metro Cuadrado Mérida trabajamos activamente para encontrar compradores cualificados. El proceso legal una vez encontrado comprador es de 30-45 días."
+    },
+    {
+        "pregunta": "¿Cómo fijan el precio de mi propiedad?",
+        "respuesta": "Realizamos una tasación profesional gratuita considerando ubicación, características, estado de conservación y valores del mercado en Mérida. Nuestros expertos conocen perfectamente la zona."
+    },
+    {
+        "pregunta": "¿Qué gastos tengo al vender mi propiedad?",
+        "respuesta": "Los gastos principales son: comisión inmobiliaria (3%), plusvalía municipal, gastos notariales y registrales. Te explicamos todos los costes de forma transparente antes de empezar."
+    },
+    {
+        "pregunta": "¿Puedo vender mi casa si aún debo dinero al banco?",
+        "respuesta": "Sí, es posible vender una propiedad con hipoteca. El dinero de la venta se usa para cancelar la deuda pendiente. Te asesoramos en todo el proceso de cancelación hipotecaria."
+    }
+]
+
 # Función para enviar email
 def enviar_email(datos_usuario, tipo_consulta):
     try:
         print(f"Intentando enviar email con configuración:")
         print(f"SMTP Server: {EMAIL_CONFIG['smtp_server']}")
-        print(f"SMTP Port: {EMAIL_CONFIG['smtp_port']}")
         print(f"From: {EMAIL_CONFIG['sender_email']}")
         print(f"To: {EMAIL_CONFIG['recipient_email']}")
         
@@ -103,45 +126,23 @@ def enviar_email(datos_usuario, tipo_consulta):
         
         msg.attach(MIMEText(cuerpo, 'plain'))
         
-        # Enviar email - Probar ambos puertos para IONOS
-        success = False
-        error_message = ""
-        
-        # Intentar puerto 587 primero (STARTTLS)
+        # Intentar solo puerto 587 con timeout reducido
         try:
             print("Intentando puerto 587 (STARTTLS)...")
-            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], 587)
+            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], 587, timeout=10)
             server.starttls()
             server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
             text = msg.as_string()
             server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
             server.quit()
-            success = True
             print("Email enviado exitosamente con puerto 587")
+            return True
         except Exception as e:
-            error_message = f"Puerto 587 falló: {e}"
-            print(error_message)
-            
-            # Intentar puerto 465 (SSL) como alternativa
-            try:
-                print("Intentando puerto 465 (SSL)...")
-                server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], 465)
-                server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
-                text = msg.as_string()
-                server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
-                server.quit()
-                success = True
-                print("Email enviado exitosamente con puerto 465")
-            except Exception as e2:
-                error_message = f"Ambos puertos fallaron. 587: {e}, 465: {e2}"
-                print(error_message)
+            print(f"Error enviando email: {e}")
+            return False
         
-        if not success:
-            raise Exception(error_message)
-        
-        return True
     except Exception as e:
-        print(f"Error enviando email: {e}")
+        print(f"Error general enviando email: {e}")
         return False
 
 @app.route('/')
@@ -152,6 +153,9 @@ def index():
 def chat():
     data = request.get_json()
     mensaje_usuario = data.get('mensaje', '').lower()
+    
+    # Debug: imprimir el mensaje recibido
+    print(f"Mensaje recibido: '{data.get('mensaje', '')}' -> Convertido a: '{mensaje_usuario}'")
     
     # Mensaje de bienvenida
     if mensaje_usuario in ['hola', 'hi', 'buenos días', 'buenas tardes', 'buenas noches', 'inicio', 'empezar']:
@@ -176,6 +180,47 @@ def chat():
                 'contexto': opcion_id
             })
     
+    # Manejo específico para opciones de vender
+    mensaje_original = data.get('mensaje', '')
+    print(f"Comparando mensaje original: '{mensaje_original}'")
+    
+    if mensaje_original == 'Sí, quiero información':
+        print("Detectado: Sí, quiero información")
+        return jsonify({
+            'tipo': 'preguntas_frecuentes_vender',
+            'mensaje': 'Aquí tienes información importante sobre el proceso de venta:',
+            'preguntas': preguntas_frecuentes_vender
+        })
+    
+    if mensaje_original == 'Continuar con el proceso':
+        print("Detectado: Continuar con el proceso")
+        return jsonify({
+            'tipo': 'opcion_seleccionada',
+            'mensaje': '¡Excelente! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?',
+            'opciones': [{'id': tipo, 'texto': tipo} for tipo in ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']],
+            'contexto': 'vender_proceso'
+        })
+    
+    # Manejo de tipos de propiedad para venta
+    tipos_propiedad = ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']
+    if mensaje_original in tipos_propiedad:
+        print(f"Detectado tipo de propiedad: {mensaje_original}")
+        return jsonify({
+            'tipo': 'opcion_seleccionada',
+            'mensaje': f'Perfecto, has seleccionado {mensaje_original}. Para continuar con la venta, necesitamos más información. ¿En qué zona se encuentra tu propiedad?',
+            'opciones': [{'id': zona, 'texto': zona} for zona in ['Centro', 'Norte', 'Bodegones-Sur', 'Nueva Ciudad', 'Sindicales']],
+            'contexto': 'vender_zona'
+        })
+    
+    # Manejo de zonas para venta
+    zonas = ['Centro', 'Norte', 'Bodegones-Sur', 'Nueva Ciudad', 'Sindicales']
+    if mensaje_original in zonas:
+        print(f"Detectada zona: {mensaje_original}")
+        return jsonify({
+            'tipo': 'solicitar_datos',
+            'mensaje': f'Excelente, zona {mensaje_original}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?'
+        })
+    
     # Preguntas frecuentes
     if 'preguntas frecuentes' in mensaje_usuario or 'faq' in mensaje_usuario:
         return jsonify({
@@ -193,6 +238,10 @@ def chat():
 @app.route('/api/faq')
 def get_faq():
     return jsonify(preguntas_frecuentes)
+
+@app.route('/api/faq-vender')
+def get_faq_vender():
+    return jsonify(preguntas_frecuentes_vender)
 
 @app.route('/api/enviar-datos', methods=['POST'])
 def enviar_datos():

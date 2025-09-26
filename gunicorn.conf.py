@@ -8,8 +8,8 @@ bind = f"0.0.0.0:{port}"
 # Workers - Reducir para plan free
 workers = 1
 
-# Timeout
-timeout = 30
+# Timeout - Aumentado para envío de emails
+timeout = 60
 
 # Logs
 accesslog = "-"

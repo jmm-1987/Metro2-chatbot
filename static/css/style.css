@@ -548,6 +548,10 @@ body {
         padding: 16px;
     }
     
+    .btn-minimize {
+        display: none;
+    }
+    
     .modal-content {
         margin: 5% auto;
         width: 95%;

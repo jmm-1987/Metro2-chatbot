@@ -11,6 +11,34 @@ let userData = {
     presupuesto: '',
     comentarios: ''
 };
+
+// Preguntas frecuentes específicas para vender propiedades
+const preguntas_frecuentes_vender = [
+    {
+        "pregunta": "¿Cuáles son los requisitos para vender una propiedad?",
+        "respuesta": "Para vender una propiedad necesitas: escritura pública, certificado de libertad de gravamen, pago de impuestos al día, y documentación personal (DNI, recibo de servicios). En Metro Cuadrado Mérida te asesoramos en todo el proceso."
+    },
+    {
+        "pregunta": "¿Qué documentos necesito para vender mi casa?",
+        "respuesta": "Los documentos principales son: escritura de propiedad, certificado de libertad de gravamen, recibo de IBI al día, certificado energético, y documentación personal. Te ayudamos a obtener todo lo necesario."
+    },
+    {
+        "pregunta": "¿Cuánto tiempo tarda en venderse una propiedad?",
+        "respuesta": "El tiempo de venta depende del mercado y precio. En Metro Cuadrado Mérida trabajamos activamente para encontrar compradores cualificados. El proceso legal una vez encontrado comprador es de 30-45 días."
+    },
+    {
+        "pregunta": "¿Cómo fijan el precio de mi propiedad?",
+        "respuesta": "Realizamos una tasación profesional gratuita considerando ubicación, características, estado de conservación y valores del mercado en Mérida. Nuestros expertos conocen perfectamente la zona."
+    },
+    {
+        "pregunta": "¿Qué gastos tengo al vender mi propiedad?",
+        "respuesta": "Los gastos principales son: comisión inmobiliaria (3%), plusvalía municipal, gastos notariales y registrales. Te explicamos todos los costes de forma transparente antes de empezar."
+    },
+    {
+        "pregunta": "¿Puedo vender mi casa si aún debo dinero al banco?",
+        "respuesta": "Sí, es posible vender una propiedad con hipoteca. El dinero de la venta se usa para cancelar la deuda pendiente. Te asesoramos en todo el proceso de cancelación hipotecaria."
+    }
+];
 let currentStep = 0;
 
 // Inicialización
@@ -129,6 +157,7 @@ async function selectOption(optionId) {
     showTypingIndicator();
     
     try {
+        console.log(`Enviando al servidor: ${optionId}`);
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -175,6 +204,12 @@ function handleBotResponse(data) {
         case 'preguntas_frecuentes':
             addBotMessage(data.mensaje);
             showFAQContent(data.preguntas);
+            hideTextInput(); // Ocultar input cuando hay opciones
+            break;
+            
+        case 'preguntas_frecuentes_vender':
+            addBotMessage(data.mensaje);
+            showFAQContentVender(data.preguntas);
             hideTextInput(); // Ocultar input cuando hay opciones
             break;
             
@@ -342,7 +377,10 @@ function showSubOptions(opciones) {
         `;
         
         // Asignar evento click después de crear el elemento
-        optionCard.addEventListener('click', () => selectSubOption(option.id));
+        optionCard.addEventListener('click', () => {
+            console.log(`Click en sub-opción: ${option.id}`);
+            selectOption(option.id);
+        });
         
         optionsContainer.appendChild(optionCard);
     });
@@ -1004,6 +1042,70 @@ function showFAQContent(preguntas) {
     scrollToBottom();
 }
 
+// Función para mostrar contenido de FAQ específico para vender
+function showFAQContentVender(preguntas) {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    const faqContainer = document.createElement('div');
+    faqContainer.className = 'options-container';
+    
+    preguntas.forEach((faq, index) => {
+        const faqCard = document.createElement('div');
+        faqCard.className = 'option-card';
+        
+        faqCard.innerHTML = `
+            <div class="option-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="option-content">
+                <h4>${faq.pregunta}</h4>
+                <p>Haz clic para ver la respuesta</p>
+            </div>
+        `;
+        
+        // Asignar evento click después de crear el elemento
+        faqCard.addEventListener('click', () => showFAQAnswerVender(faq));
+        
+        faqContainer.appendChild(faqCard);
+    });
+    
+    // Agregar opción "Continuar con el proceso" al final
+    const continueCard = document.createElement('div');
+    continueCard.className = 'option-card';
+    continueCard.innerHTML = `
+        <div class="option-icon">
+            <i class="fas fa-arrow-right"></i>
+        </div>
+        <div class="option-content">
+            <h4>Continuar con el proceso</h4>
+            <p>Proceder con la venta de mi propiedad</p>
+        </div>
+    `;
+    
+    continueCard.addEventListener('click', () => {
+        addUserMessage('Continuar con el proceso');
+        showTypingIndicator();
+        
+        // Simular llamada al API
+        setTimeout(() => {
+            hideTypingIndicator();
+            addBotMessage('¡Excelente! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?');
+            showSubOptions([
+                {'id': 'Vivienda', 'texto': 'Vivienda'},
+                {'id': 'Terreno', 'texto': 'Terreno'},
+                {'id': 'Nave industrial', 'texto': 'Nave industrial'},
+                {'id': 'Local comercial', 'texto': 'Local comercial'}
+            ]);
+            currentContext = 'vender_proceso';
+        }, 1000);
+    });
+    
+    faqContainer.appendChild(continueCard);
+    chatMessages.appendChild(faqContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
+    scrollToBottom();
+}
+
 // Función para mostrar respuesta de FAQ
 function showFAQAnswer(faq) {
     if (isTyping) return;
@@ -1034,6 +1136,77 @@ function showFAQAnswer(faq) {
         moreCard.addEventListener('click', () => showFAQ());
         
         moreOptions.appendChild(moreCard);
+        chatMessages.appendChild(moreOptions);
+        hideTextInput(); // Ocultar input cuando se muestran opciones
+        scrollToBottom();
+    }, 500);
+}
+
+// Función para mostrar respuesta de FAQ específico para vender
+function showFAQAnswerVender(faq) {
+    if (isTyping) return;
+    
+    addUserMessage(faq.pregunta);
+    addBotMessage(faq.respuesta);
+    
+    // Mostrar opciones después de la respuesta
+    setTimeout(() => {
+        const chatMessages = document.getElementById('chatMessages');
+        const moreOptions = document.createElement('div');
+        moreOptions.className = 'options-container';
+        
+        // Opción para ver más preguntas
+        const moreCard = document.createElement('div');
+        moreCard.className = 'option-card';
+        moreCard.innerHTML = `
+            <div class="option-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="option-content">
+                <h4>Ver más preguntas</h4>
+                <p>Haz clic para ver todas las preguntas sobre venta</p>
+            </div>
+        `;
+        moreCard.addEventListener('click', () => {
+            addUserMessage('Ver más preguntas');
+            showTypingIndicator();
+            setTimeout(() => {
+                hideTypingIndicator();
+                addBotMessage('Aquí tienes información importante sobre el proceso de venta:');
+                showFAQContentVender(preguntas_frecuentes_vender);
+            }, 1000);
+        });
+        
+        // Opción para continuar con el proceso
+        const continueCard = document.createElement('div');
+        continueCard.className = 'option-card';
+        continueCard.innerHTML = `
+            <div class="option-icon">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="option-content">
+                <h4>Continuar con el proceso</h4>
+                <p>Proceder con la venta de mi propiedad</p>
+            </div>
+        `;
+        continueCard.addEventListener('click', () => {
+            addUserMessage('Continuar con el proceso');
+            showTypingIndicator();
+            setTimeout(() => {
+                hideTypingIndicator();
+                addBotMessage('¡Excelente! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?');
+                showSubOptions([
+                    {'id': 'Vivienda', 'texto': 'Vivienda'},
+                    {'id': 'Terreno', 'texto': 'Terreno'},
+                    {'id': 'Nave industrial', 'texto': 'Nave industrial'},
+                    {'id': 'Local comercial', 'texto': 'Local comercial'}
+                ]);
+                currentContext = 'vender_proceso';
+            }, 1000);
+        });
+        
+        moreOptions.appendChild(moreCard);
+        moreOptions.appendChild(continueCard);
         chatMessages.appendChild(moreOptions);
         hideTextInput(); // Ocultar input cuando se muestran opciones
         scrollToBottom();
