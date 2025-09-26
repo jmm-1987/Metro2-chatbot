@@ -161,6 +161,12 @@ function handleBotResponse(data) {
             addBotMessage(data.mensaje);
             currentContext = data.contexto;
             if (data.opciones) {
+                // Si el contexto es comprar, mostramos de inmediato la opción de consultar la web
+                if (currentContext === 'comprar') {
+                    setTimeout(() => {
+                        showWebsiteOption();
+                    }, 400);
+                }
                 showSubOptions(data.opciones);
                 hideTextInput(); // Ocultar input cuando hay opciones
             }
@@ -352,6 +358,18 @@ function selectSubOption(optionId) {
     
     addUserMessage(optionId);
     
+    // Manejo especial para las opciones de comprar
+    if (currentContext === 'comprar') {
+        if (optionId === 'Continuar con atención personalizada') {
+            addBotMessage('Excelente. Continuemos con el proceso para brindarte asistencia personalizada. ¿Qué tipo de propiedad buscas?');
+            showPropertyTypeOptions();
+            return;
+        } else if (optionId === 'Contactar directamente') {
+            showContactInfo();
+            return;
+        }
+    }
+    
     // Guardar tipo de propiedad
     userData.tipo_propiedad = optionId;
     currentStep = 1;
@@ -362,9 +380,6 @@ function selectSubOption(optionId) {
     switch (currentContext) {
         case 'vender':
             responseMessage = `Perfecto, has seleccionado ${optionId}. Para continuar con la venta, necesitamos más información. ¿En qué zona se encuentra tu propiedad?`;
-            break;
-        case 'comprar':
-            responseMessage = `Excelente elección, ${optionId}. ¿En qué zona te gustaría buscar?`;
             break;
         case 'alquilar':
             responseMessage = `Muy bien, ${optionId}. ¿En qué zona necesitas alquilar?`;
@@ -377,6 +392,161 @@ function selectSubOption(optionId) {
     }
     
     addBotMessage(responseMessage);
+    
+    // Para alquilar (no comprar aquí), mostrar opción adicional de consultar en el sitio web
+    // En comprar ya se muestra en la primera interacción
+    if (currentContext === 'alquilar') {
+        setTimeout(() => {
+            showWebsiteOption();
+        }, 1000);
+    }
+    
+    // Mostrar opciones de zona
+    showZoneOptions();
+}
+
+// Función para mostrar opción del sitio web
+function showWebsiteOption() {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    const websiteContainer = document.createElement('div');
+    websiteContainer.className = 'website-option-container';
+    
+    const websiteCard = document.createElement('div');
+    websiteCard.className = 'website-option-card';
+    
+    websiteCard.innerHTML = `
+        <div class="website-option-icon">
+            <i class="fas fa-globe"></i>
+        </div>
+        <div class="website-option-content">
+            <h4>🌐 Consultar inmuebles disponibles</h4>
+            <p>Explora nuestro catálogo completo de propiedades en m2merida.com</p>
+            <button class="website-btn" onclick="openWebsite()">
+                <i class="fas fa-external-link-alt"></i>
+                Ver inmuebles disponibles
+            </button>
+        </div>
+    `;
+    
+    websiteContainer.appendChild(websiteCard);
+    chatMessages.appendChild(websiteContainer);
+    scrollToBottom();
+}
+
+// Función para abrir el sitio web
+function openWebsite() {
+    window.open('https://www.m2merida.com/', '_blank');
+    
+    // Agregar mensaje del usuario
+    addUserMessage('Consultar inmuebles en el sitio web');
+    
+    // Mensaje del bot
+    addBotMessage('¡Perfecto! He abierto nuestro sitio web donde puedes explorar todos los inmuebles disponibles. También puedes continuar con nosotros para recibir asistencia personalizada.');
+    
+    // Mostrar opciones para continuar
+    setTimeout(() => {
+        showContinueOptions();
+    }, 1000);
+}
+
+// Función para mostrar opciones de continuar
+function showContinueOptions() {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options-container';
+    
+    const options = [
+        {
+            icon: 'fas fa-map-marker-alt',
+            title: 'Continuar con asistencia personalizada',
+            description: 'Te ayudamos a encontrar la propiedad perfecta',
+            action: () => {
+                addUserMessage('Continuar con asistencia personalizada');
+                addBotMessage('Excelente. Continuemos con el proceso para brindarte asistencia personalizada.');
+                showZoneOptions();
+            }
+        },
+        {
+            icon: 'fas fa-phone',
+            title: 'Contactar directamente',
+            description: 'Habla con un asesor especializado',
+            action: () => {
+                addUserMessage('Contactar directamente');
+                showContactInfo();
+            }
+        }
+    ];
+    
+    options.forEach(option => {
+        const optionCard = document.createElement('div');
+        optionCard.className = 'option-card';
+        
+        optionCard.innerHTML = `
+            <div class="option-icon">
+                <i class="${option.icon}"></i>
+            </div>
+            <div class="option-content">
+                <h4>${option.title}</h4>
+                <p>${option.description}</p>
+            </div>
+        `;
+        
+        optionCard.addEventListener('click', option.action);
+        optionsContainer.appendChild(optionCard);
+    });
+    
+    chatMessages.appendChild(optionsContainer);
+    hideTextInput();
+    scrollToBottom();
+}
+
+// Función para mostrar opciones de tipo de propiedad
+function showPropertyTypeOptions() {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options-container';
+    
+    const tiposPropiedad = ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial'];
+    
+    tiposPropiedad.forEach(tipo => {
+        const optionCard = document.createElement('div');
+        optionCard.className = 'option-card';
+        
+        optionCard.innerHTML = `
+            <div class="option-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="option-content">
+                <h4>${tipo}</h4>
+                <p>Selecciona para continuar</p>
+            </div>
+        `;
+        
+        // Asignar evento click después de crear el elemento
+        optionCard.addEventListener('click', () => selectPropertyType(tipo));
+        
+        optionsContainer.appendChild(optionCard);
+    });
+    
+    chatMessages.appendChild(optionsContainer);
+    hideTextInput(); // Ocultar input cuando se muestran opciones
+    scrollToBottom();
+}
+
+// Función para seleccionar tipo de propiedad
+function selectPropertyType(tipo) {
+    if (isTyping) return;
+    
+    addUserMessage(tipo);
+    
+    // Guardar tipo de propiedad
+    userData.tipo_propiedad = tipo;
+    currentStep = 1;
+    
+    addBotMessage(`Excelente elección, ${tipo}. ¿En qué zona te gustaría buscar?`);
     
     // Mostrar opciones de zona
     showZoneOptions();
@@ -433,7 +603,7 @@ function selectZone(zona) {
             responseMessage = `Excelente, zona ${zona}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso.¿Cuál es tu nombre completo?`;
             break;
         case 'comprar':
-            responseMessage = `Perfecto, zona ${zona}. Para encontrar las mejores opciones, necesitamos algunos datos. ¿Cuál es tu nombre completo?`;
+            responseMessage = `Perfecto, zona ${zona}. Esta información es muy valiosa para nosotros ya que podemos trabajar en tu caso antes de contactarte. Ahora necesitamos algunos datos de contacto. ¿Cuál es tu nombre completo?`;
             break;
         case 'alquilar':
             responseMessage = `Muy bien, zona ${zona}. Para ayudarte a encontrar el lugar perfecto, necesitamos algunos datos. ¿Cuál es tu nombre completo?`;

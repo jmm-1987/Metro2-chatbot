@@ -23,8 +23,8 @@ opciones_principales = {
     "comprar": {
         "titulo": "Comprar propiedad",
         "descripcion": "Encuentra la propiedad perfecta para ti",
-        "mensaje": "¡Perfecto! Te ayudaremos a encontrar la propiedad ideal. ¿Qué tipo de propiedad buscas?",
-        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
+        "mensaje": "Muy bien, puedes consultar los inmuebles disponibles en nuestra web. Si lo prefieres puedes elegir una de estas dos opciones:",
+        "opciones": ["Continuar con atención personalizada", "Contactar directamente"]
     },
     "alquilar": {
         "titulo": "Alquilar propiedad",
