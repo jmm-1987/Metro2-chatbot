@@ -219,6 +219,13 @@ function handleBotResponse(data) {
             showTextInput(); // Mostrar input cuando se solicitan datos
             break;
             
+        case 'contacto_directo':
+            addBotMessage(data.mensaje);
+            setTimeout(() => {
+                showContactInfo();
+            }, 1000);
+            break;
+            
         case 'texto':
         default:
             addBotMessage(data.mensaje);

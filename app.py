@@ -11,6 +11,9 @@ except ImportError:
 
 app = Flask(__name__)
 
+# Variable global para rastrear el contexto actual del usuario
+user_contexts = {}
+
 # Datos de ejemplo para las opciones
 opciones_principales = {
     "vender": {
@@ -186,9 +189,14 @@ def index():
 def chat():
     data = request.get_json()
     mensaje_usuario = data.get('mensaje', '').lower()
+    mensaje_original = data.get('mensaje', '')
+    
+    # Obtener IP del cliente para rastrear contexto (simplificado)
+    client_ip = request.remote_addr
     
     # Debug: imprimir el mensaje recibido
-    print(f"Mensaje recibido: '{data.get('mensaje', '')}' -> Convertido a: '{mensaje_usuario}'")
+    print(f"Mensaje recibido: '{mensaje_original}' -> Convertido a: '{mensaje_usuario}'")
+    print(f"Contexto actual para IP {client_ip}: {user_contexts.get(client_ip, 'Ninguno')}")
     
     # Mensaje de bienvenida
     if mensaje_usuario in ['hola', 'hi', 'buenos días', 'buenas tardes', 'buenas noches', 'inicio', 'empezar']:
@@ -206,6 +214,10 @@ def chat():
     # Manejo de opciones principales
     for opcion_id, opcion_data in opciones_principales.items():
         if opcion_id in mensaje_usuario or opcion_data['titulo'].lower() in mensaje_usuario:
+            # Establecer contexto del usuario
+            user_contexts[client_ip] = opcion_id
+            print(f"Estableciendo contexto para IP {client_ip}: {opcion_id}")
+            
             return jsonify({
                 'tipo': 'opcion_seleccionada',
                 'mensaje': opcion_data['mensaje'],
@@ -214,7 +226,6 @@ def chat():
             })
     
     # Manejo específico para opciones de vender
-    mensaje_original = data.get('mensaje', '')
     print(f"Comparando mensaje original: '{mensaje_original}'")
     
     if mensaje_original == 'Sí, quiero información':
@@ -234,24 +245,65 @@ def chat():
             'contexto': 'vender_proceso'
         })
     
-    # Manejo de tipos de propiedad para venta
+    # Manejo específico para opciones de comprar
+    if mensaje_original == 'Continuar con atención personalizada':
+        print("Detectado: Continuar con atención personalizada (comprar)")
+        return jsonify({
+            'tipo': 'opcion_seleccionada',
+            'mensaje': 'Excelente. Continuemos con el proceso para brindarte asistencia personalizada. ¿Qué tipo de propiedad buscas?',
+            'opciones': [{'id': tipo, 'texto': tipo} for tipo in ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']],
+            'contexto': 'comprar_proceso'
+        })
+    
+    if mensaje_original == 'Contactar directamente':
+        print("Detectado: Contactar directamente")
+        return jsonify({
+            'tipo': 'contacto_directo',
+            'mensaje': 'Perfecto, aquí tienes nuestra información de contacto para que puedas hablar directamente con un asesor especializado.'
+        })
+    
+    # Manejo de tipos de propiedad (para venta y compra)
     tipos_propiedad = ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']
     if mensaje_original in tipos_propiedad:
         print(f"Detectado tipo de propiedad: {mensaje_original}")
+        
+        # Obtener contexto del usuario
+        contexto_usuario = user_contexts.get(client_ip, 'vender')
+        print(f"Contexto del usuario: {contexto_usuario}")
+        
+        # Determinar el contexto y mensaje según la opción principal seleccionada
+        if contexto_usuario == 'comprar':
+            contexto_actual = 'comprar_zona'
+            mensaje = f'Excelente elección, {mensaje_original}. ¿En qué zona te gustaría buscar?'
+        else:  # vender por defecto
+            contexto_actual = 'vender_zona'
+            mensaje = f'Perfecto, has seleccionado {mensaje_original}. Para continuar con la venta, necesitamos más información. ¿En qué zona se encuentra tu propiedad?'
+        
         return jsonify({
             'tipo': 'opcion_seleccionada',
-            'mensaje': f'Perfecto, has seleccionado {mensaje_original}. Para continuar con la venta, necesitamos más información. ¿En qué zona se encuentra tu propiedad?',
+            'mensaje': mensaje,
             'opciones': [{'id': zona, 'texto': zona} for zona in ['Centro', 'Norte', 'Bodegones-Sur', 'Nueva Ciudad', 'Sindicales']],
-            'contexto': 'vender_zona'
+            'contexto': contexto_actual
         })
     
-    # Manejo de zonas para venta
+    # Manejo de zonas (para venta y compra)
     zonas = ['Centro', 'Norte', 'Bodegones-Sur', 'Nueva Ciudad', 'Sindicales']
     if mensaje_original in zonas:
         print(f"Detectada zona: {mensaje_original}")
+        
+        # Obtener contexto del usuario
+        contexto_usuario = user_contexts.get(client_ip, 'vender')
+        print(f"Contexto del usuario para zona: {contexto_usuario}")
+        
+        # Mensaje según el contexto
+        if contexto_usuario == 'comprar':
+            mensaje = f'Perfecto, zona {mensaje_original}. Esta información es muy valiosa para nosotros ya que podemos trabajar en tu caso antes de contactarte. Ahora necesitamos algunos datos de contacto. ¿Cuál es tu nombre completo?'
+        else:  # vender por defecto
+            mensaje = f'Excelente, zona {mensaje_original}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?'
+        
         return jsonify({
             'tipo': 'solicitar_datos',
-            'mensaje': f'Excelente, zona {mensaje_original}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?'
+            'mensaje': mensaje
         })
     
     # Manejo de datos del usuario (nombre, teléfono, comentarios)
