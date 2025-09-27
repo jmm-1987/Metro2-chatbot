@@ -221,6 +221,16 @@ def chat():
             'mensaje': f'Excelente, zona {mensaje_original}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?'
         })
     
+    # Manejo de datos del usuario (nombre, teléfono, comentarios)
+    # Esto debería manejarse en el frontend, pero por seguridad agregamos validación básica
+    if len(mensaje_original.strip()) > 0 and mensaje_original not in ['preguntas frecuentes', 'faq']:
+        # Si es un mensaje de texto simple (probablemente datos del usuario), 
+        # devolvemos una respuesta genérica para que el frontend lo procese
+        return jsonify({
+            'tipo': 'texto',
+            'mensaje': 'Datos recibidos. Continuando con el proceso...'
+        })
+    
     # Preguntas frecuentes
     if 'preguntas frecuentes' in mensaje_usuario or 'faq' in mensaje_usuario:
         return jsonify({

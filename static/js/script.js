@@ -215,6 +215,7 @@ function handleBotResponse(data) {
             
         case 'solicitar_datos':
             addBotMessage(data.mensaje);
+            currentStep = 2; // Establecer paso de recolección de datos
             showTextInput(); // Mostrar input cuando se solicitan datos
             break;
             
