@@ -1,9 +1,8 @@
+# -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, jsonify
 import json
 from datetime import datetime
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 import os
 try:
     from config import EMAIL_CONFIG
@@ -88,83 +87,92 @@ preguntas_frecuentes_vender = [
     }
 ]
 
-# Función para enviar email
+# Función para enviar email usando EmailJS API
 def enviar_email(datos_usuario, tipo_consulta):
     try:
-        print(f"=== INICIO ENVÍO EMAIL ===")
-        print(f"Intentando enviar email con configuración:")
-        print(f"SMTP Server: {EMAIL_CONFIG['smtp_server']}")
-        print(f"SMTP Port: {EMAIL_CONFIG['smtp_port']}")
+        print(f"=== INICIO ENVÍO EMAIL (EmailJS) ===")
+        print(f"Intentando enviar email con EmailJS API...")
+        print(f"Service ID: {EMAIL_CONFIG['emailjs_service_id']}")
+        print(f"Template ID: {EMAIL_CONFIG['emailjs_template_id']}")
+        print(f"User ID: {EMAIL_CONFIG['emailjs_user_id']}")
+        print(f"Private Key: {'*' * 10}...{EMAIL_CONFIG['emailjs_private_key'][-4:] if EMAIL_CONFIG.get('emailjs_private_key') else 'No configurada'}")
         print(f"From: {EMAIL_CONFIG['sender_email']}")
         print(f"To: {EMAIL_CONFIG['recipient_email']}")
         print(f"Datos usuario: {datos_usuario}")
         print(f"Tipo consulta: {tipo_consulta}")
-        
-        # Crear mensaje
-        msg = MIMEMultipart()
-        msg['From'] = EMAIL_CONFIG['sender_email']
-        msg['To'] = EMAIL_CONFIG['recipient_email']
-        msg['Subject'] = f'Nueva consulta de {tipo_consulta} - Metro Cuadrado Mérida'
-        
-        # Crear cuerpo del email
-        cuerpo = f"""
-        Nueva consulta recibida desde el chatbot de Metro Cuadrado Mérida
-        
-        Tipo de consulta: {tipo_consulta}
-        Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}
-        
-        Datos del cliente:
-        - Nombre: {datos_usuario.get('nombre', 'No proporcionado')}
-        - Teléfono: {datos_usuario.get('telefono', 'No proporcionado')}
-        - Email: {datos_usuario.get('email', 'No proporcionado') if datos_usuario.get('email') else 'No proporcionado'}
-        - Tipo de propiedad: {datos_usuario.get('tipo_propiedad', 'No especificado')}
-        - Zona: {datos_usuario.get('zona', 'No especificada')}
-        - Presupuesto: {datos_usuario.get('presupuesto', 'No especificado') if datos_usuario.get('presupuesto') else 'No especificado'}
-        - Comentarios adicionales: {datos_usuario.get('comentarios', 'Ninguno')}
-        
-        Por favor, contactar al cliente lo antes posible.
-        
-        Saludos,
-        Sistema de Chatbot Metro Cuadrado Mérida
-        """
-        
-        msg.attach(MIMEText(cuerpo, 'plain'))
-        
-        # Intentar puerto 587 (STARTTLS)
-        try:
-            print("Intentando puerto 587 (STARTTLS)...")
-            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], 587, timeout=10)
-            server.starttls()
-            server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
-            text = msg.as_string()
-            server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
-            server.quit()
-            print("✅ Email enviado exitosamente con puerto 587 (STARTTLS)")
+
+        # Preparar los datos para la plantilla de EmailJS
+        template_params = {
+            "from_name": datos_usuario.get('nombre', 'Anonimo'),
+            "from_email": datos_usuario.get('email', EMAIL_CONFIG['sender_email']),
+            "to_email": EMAIL_CONFIG['recipient_email'],
+            "subject": f"Nueva consulta de {tipo_consulta} - Metro Cuadrado Merida",
+            "message": f"""
+Nueva consulta recibida desde el chatbot de Metro Cuadrado Merida
+
+Tipo de consulta: {tipo_consulta}
+Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}
+
+Datos del cliente:
+- Nombre: {datos_usuario.get('nombre', 'No proporcionado')}
+- Telefono: {datos_usuario.get('telefono', 'No proporcionado')}
+- Email: {datos_usuario.get('email', 'No proporcionado') if datos_usuario.get('email') else 'No proporcionado'}
+- Tipo de propiedad: {datos_usuario.get('tipo_propiedad', 'No especificado')}
+- Zona: {datos_usuario.get('zona', 'No especificada')}
+- Presupuesto: {datos_usuario.get('presupuesto', 'No especificado') if datos_usuario.get('presupuesto') else 'No especificado'}
+- Comentarios adicionales: {datos_usuario.get('comentarios', 'Ninguno')}
+
+Por favor, contactar al cliente lo antes posible.
+
+Saludos,
+Sistema de Chatbot Metro Cuadrado Merida
+            """,
+            "tipo_consulta": tipo_consulta,
+            "tipo_propiedad": datos_usuario.get('tipo_propiedad', 'No especificado'),
+            "zona": datos_usuario.get('zona', 'No especificada'),
+            "nombre": datos_usuario.get('nombre', 'No proporcionado'),
+            "telefono": datos_usuario.get('telefono', 'No proporcionado'),
+            "email_cliente": datos_usuario.get('email', 'No proporcionado'),
+            "presupuesto": datos_usuario.get('presupuesto', 'No especificado'),
+            "comentarios": datos_usuario.get('comentarios', 'Ninguno')
+        }
+
+        # Estructura de la solicitud a la API de EmailJS
+        emailjs_data = {
+            "service_id": EMAIL_CONFIG['emailjs_service_id'],
+            "template_id": EMAIL_CONFIG['emailjs_template_id'],
+            "user_id": EMAIL_CONFIG['emailjs_user_id'],
+            "accessToken": EMAIL_CONFIG.get('emailjs_private_key', ''),
+            "template_params": template_params
+        }
+
+        print("Enviando solicitud a EmailJS API...")
+        # Realizar la solicitud POST a la API de EmailJS
+        response = requests.post("https://api.emailjs.com/api/v1.0/email/send", 
+                               json=emailjs_data, 
+                               timeout=30,
+                               headers={
+                                   'Content-Type': 'application/json; charset=utf-8'
+                               })
+
+        print(f"Respuesta de EmailJS - Código: {response.status_code}")
+        print(f"Respuesta de EmailJS - Texto: {response.text}")
+
+        if response.status_code == 200:
+            print("✅ Email enviado exitosamente con EmailJS")
             return True
-        except Exception as e:
-            print(f"❌ Error con puerto 587: {e}")
-            print(f"Tipo de error: {type(e).__name__}")
-            
-            # Intentar puerto 465 (SSL) como fallback
-            try:
-                print("Intentando puerto 465 (SSL) como alternativa...")
-                server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], 465, timeout=10)
-                server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
-                text = msg.as_string()
-                server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
-                server.quit()
-                print("✅ Email enviado exitosamente con puerto 465 (SSL)")
-                return True
-            except Exception as e2:
-                print(f"❌ Error también con puerto 465: {e2}")
-                print(f"Tipo de error: {type(e2).__name__}")
-                import traceback
-                print(f"Traceback completo puerto 587: {traceback.format_exc()}")
-                print(f"Traceback completo puerto 465: {traceback.format_exc()}")
-                return False
-        
+        else:
+            print(f"❌ Error enviando email con EmailJS. Código de estado: {response.status_code}")
+            print(f"Respuesta de EmailJS: {response.text}")
+            return False
+
+    except requests.exceptions.Timeout:
+        print("❌ Error de Timeout al conectar con EmailJS.")
+        import traceback
+        print(f"Traceback completo: {traceback.format_exc()}")
+        return False
     except Exception as e:
-        print(f"ERROR GENERAL enviando email: {e}")
+        print(f"❌ ERROR GENERAL enviando email con EmailJS: {e}")
         print(f"Tipo de error: {type(e).__name__}")
         import traceback
         print(f"Traceback completo: {traceback.format_exc()}")
