@@ -91,10 +91,14 @@ preguntas_frecuentes_vender = [
 # Función para enviar email
 def enviar_email(datos_usuario, tipo_consulta):
     try:
+        print(f"=== INICIO ENVÍO EMAIL ===")
         print(f"Intentando enviar email con configuración:")
         print(f"SMTP Server: {EMAIL_CONFIG['smtp_server']}")
+        print(f"SMTP Port: {EMAIL_CONFIG['smtp_port']}")
         print(f"From: {EMAIL_CONFIG['sender_email']}")
         print(f"To: {EMAIL_CONFIG['recipient_email']}")
+        print(f"Datos usuario: {datos_usuario}")
+        print(f"Tipo consulta: {tipo_consulta}")
         
         # Crear mensaje
         msg = MIMEMultipart()
@@ -138,11 +142,17 @@ def enviar_email(datos_usuario, tipo_consulta):
             print("Email enviado exitosamente con puerto 587")
             return True
         except Exception as e:
-            print(f"Error enviando email: {e}")
+            print(f"ERROR enviando email: {e}")
+            print(f"Tipo de error: {type(e).__name__}")
+            import traceback
+            print(f"Traceback completo: {traceback.format_exc()}")
             return False
         
     except Exception as e:
-        print(f"Error general enviando email: {e}")
+        print(f"ERROR GENERAL enviando email: {e}")
+        print(f"Tipo de error: {type(e).__name__}")
+        import traceback
+        print(f"Traceback completo: {traceback.format_exc()}")
         return False
 
 @app.route('/')
@@ -256,30 +266,40 @@ def get_faq_vender():
 @app.route('/api/enviar-datos', methods=['POST'])
 def enviar_datos():
     try:
+        print("=== INICIO ENVIAR DATOS ===")
         data = request.get_json()
+        print(f"Datos recibidos: {data}")
         
         # Validar datos requeridos
         if not data.get('nombre') or not data.get('telefono'):
+            print("ERROR: Faltan datos requeridos (nombre o teléfono)")
             return jsonify({
                 'success': False,
                 'message': 'Nombre y teléfono son requeridos'
             }), 400
         
+        print("Datos válidos, procediendo a enviar email...")
         # Enviar email
         email_enviado = enviar_email(data, data.get('tipo_consulta', 'Consulta general'))
+        print(f"Resultado del envío de email: {email_enviado}")
         
         if email_enviado:
+            print("Email enviado exitosamente")
             return jsonify({
                 'success': True,
                 'message': 'Datos enviados correctamente. Un asesor se pondrá en contacto contigo pronto.'
             })
         else:
+            print("Error al enviar email")
             return jsonify({
                 'success': False,
                 'message': 'Error al enviar los datos. Por favor, intenta de nuevo.'
             }), 500
             
     except Exception as e:
+        print(f"ERROR en enviar_datos: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
             'message': 'Error interno del servidor'
