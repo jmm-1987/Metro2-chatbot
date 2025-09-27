@@ -6,8 +6,8 @@ import os
 EMAIL_CONFIG = {
     'smtp_server': 'smtp.ionos.es',
     'smtp_port': 587,  # Puerto STARTTLS para IONOS (alternativa a 465)
-    'sender_email': os.getenv('EMAIL_USER', 'avisos@jm2-tech.es'),
-    'sender_password': os.getenv('EMAIL_PASSWORD', 'tu_password'),
+    'sender_email': 'avisos@jm2-tech.es',  # Temporal: usar valor directo
+    'sender_password': 'tu_contraseña_real',  # Temporal: cambiar por tu contraseña real
     'recipient_email': 'jomma.tech@gmail.com'
 }
 

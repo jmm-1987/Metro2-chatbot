@@ -33,7 +33,7 @@
 En el dashboard de Render, ve a tu servicio → "Environment" y agrega:
 
 ```
-EMAIL_USER=tu_email@gmail.com
+EMAIL_USER=avisos@jm2-tech.es
 EMAIL_PASSWORD=tu_app_password_de_gmail
 FLASK_ENV=production
 PORT=10000
