@@ -6,7 +6,7 @@ import os
 EMAIL_CONFIG = {
     'smtp_server': 'smtp.ionos.es',
     'smtp_port': 587,  # Puerto STARTTLS para IONOS (alternativa a 465)
-    'sender_email': os.getenv('EMAIL_USER', 'tu_email@ionos.com'),
+    'sender_email': os.getenv('EMAIL_USER', 'jm2-tech@jm2-tech.es'),
     'sender_password': os.getenv('EMAIL_PASSWORD', 'tu_password'),
     'recipient_email': 'jomma.tech@gmail.com'
 }

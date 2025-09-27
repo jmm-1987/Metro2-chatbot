@@ -17,7 +17,7 @@ opciones_principales = {
     "vender": {
         "titulo": "Vender mi propiedad",
         "descripcion": "Te ayudamos a vender tu propiedad al mejor precio",
-        "mensaje": "Perfecto, estaremos encantados de ayudarte con el proceso de venta. ¿Necesitas información acerca de documentación y trámites necesarios?",
+        "mensaje": "Perfecto, estaremos encantados de ayudarte con el proceso de venta. ¿Necesitas información acerca de documentación y trámites necesarios, o prefieres continuar con el proceso?",
         "opciones": ["Sí, quiero información", "Continuar con el proceso"]
     },
     "comprar": {
@@ -130,7 +130,7 @@ def enviar_email(datos_usuario, tipo_consulta):
         
         msg.attach(MIMEText(cuerpo, 'plain'))
         
-        # Intentar solo puerto 587 con timeout reducido
+        # Intentar puerto 587 (STARTTLS)
         try:
             print("Intentando puerto 587 (STARTTLS)...")
             server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], 587, timeout=10)
@@ -139,14 +139,29 @@ def enviar_email(datos_usuario, tipo_consulta):
             text = msg.as_string()
             server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
             server.quit()
-            print("Email enviado exitosamente con puerto 587")
+            print("✅ Email enviado exitosamente con puerto 587 (STARTTLS)")
             return True
         except Exception as e:
-            print(f"ERROR enviando email: {e}")
+            print(f"❌ Error con puerto 587: {e}")
             print(f"Tipo de error: {type(e).__name__}")
-            import traceback
-            print(f"Traceback completo: {traceback.format_exc()}")
-            return False
+            
+            # Intentar puerto 465 (SSL) como fallback
+            try:
+                print("Intentando puerto 465 (SSL) como alternativa...")
+                server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], 465, timeout=10)
+                server.login(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'])
+                text = msg.as_string()
+                server.sendmail(EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['recipient_email'], text)
+                server.quit()
+                print("✅ Email enviado exitosamente con puerto 465 (SSL)")
+                return True
+            except Exception as e2:
+                print(f"❌ Error también con puerto 465: {e2}")
+                print(f"Tipo de error: {type(e2).__name__}")
+                import traceback
+                print(f"Traceback completo puerto 587: {traceback.format_exc()}")
+                print(f"Traceback completo puerto 465: {traceback.format_exc()}")
+                return False
         
     except Exception as e:
         print(f"ERROR GENERAL enviando email: {e}")
