@@ -183,7 +183,7 @@ body {
     display: flex;
     gap: 12px;
     max-width: 100%;
-    animation: slideIn 0.3s ease-out;
+    animation: slideIn 0.5s ease-out;
     padding: 0 5px;
 }
 
@@ -194,7 +194,7 @@ body {
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(15px);
     }
     to {
         opacity: 1;
@@ -706,7 +706,7 @@ body {
 
 /* Animaciones adicionales */
 .fade-in {
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.5s ease-in;
 }
 
 @keyframes fadeIn {
@@ -715,13 +715,13 @@ body {
 }
 
 .slide-up {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(25px);
     }
     to {
         opacity: 1;
@@ -732,7 +732,7 @@ body {
 /* Estilos para la opción del sitio web */
 .website-option-container {
     margin: 16px 0;
-    animation: slideUp 0.4s ease-out;
+    animation: slideUp 0.6s ease-out;
 }
 
 .website-option-card {

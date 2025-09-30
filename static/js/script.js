@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Asegurar que los eventos de las opciones principales estén asignados
     setTimeout(() => {
         attachMainOptionsEvents();
-    }, 500);
+    }, 800);
 });
 
 // Función para obtener la hora actual
@@ -194,7 +194,7 @@ function handleBotResponse(data) {
                 if (currentContext === 'comprar' || currentContext === 'alquilar') {
                     setTimeout(() => {
                         showWebsiteOption();
-                    }, 400);
+                    }, 600);
                 }
                 showSubOptions(data.opciones);
                 hideTextInput(); // Ocultar input cuando hay opciones
@@ -308,7 +308,7 @@ function showMainOptions(opciones) {
         `;
         
         // Agregar animación escalonada
-        optionCard.style.animationDelay = `${index * 0.1}s`;
+        optionCard.style.animationDelay = `${index * 0.2}s`;
         optionCard.classList.add('slide-up');
         
         optionsContainer.appendChild(optionCard);
