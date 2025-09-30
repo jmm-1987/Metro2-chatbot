@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import requests
 import os
+import random
 try:
     from config import EMAIL_CONFIG
 except ImportError:
@@ -14,31 +15,158 @@ app = Flask(__name__)
 # Variable global para rastrear el contexto actual del usuario
 user_contexts = {}
 
+# Mensajes variados para evitar repetición
+MENSAJES_VARIADOS = {
+    'bienvenida': [
+        '¡Hola! Bienvenido a Metro Cuadrado Mérida. ¿En qué podemos ayudarte hoy?',
+        '¡Hola! Es un placer recibirte en Metro Cuadrado Mérida. ¿Cómo puedo asistirte?',
+        '¡Bienvenido! Gracias por contactar con Metro Cuadrado Mérida. ¿Qué necesitas hoy?'
+    ],
+    'vender': [
+        'Perfecto, estaremos encantados de ayudarte con el proceso de venta. ¿Necesitas información acerca de documentación y trámites necesarios, o prefieres continuar con el proceso?',
+        'Excelente decisión. Nos encantaría ayudarte a vender tu propiedad. ¿Quieres que te expliquemos los documentos que necesitas, o prefieres avanzar directamente con el proceso?',
+        'Muy bien, te ayudaremos con la venta. ¿Te gustaría conocer los trámites y documentación requerida, o prefieres ir directamente al proceso de venta?'
+    ],
+    'comprar': [
+        'Muy bien, puedes consultar los inmuebles disponibles en nuestra web. Si lo prefieres puedes elegir una de estas dos opciones:',
+        'Perfecto, en nuestra web encontrarás todas las propiedades disponibles. También puedes seleccionar una de estas alternativas:',
+        'Genial, te invitamos a ver nuestras propiedades en la web. O si lo prefieres, elige una de estas opciones:'
+    ],
+    'alquilar': [
+        'Muy bien, puedes consultar las propiedades disponibles para alquilar en nuestra web. Si lo prefieres puedes elegir una de estas dos opciones:',
+        'Perfecto, en nuestra web encontrarás todos los inmuebles en alquiler. También puedes seleccionar una de estas alternativas:',
+        'Genial, te invitamos a ver las propiedades en alquiler en nuestra web. O si lo prefieres, elige una de estas opciones:'
+    ],
+    'alquilar_mi_propiedad': [
+        '¡Excelente! Te ayudaremos a alquilar tu propiedad. ¿Qué tipo de propiedad quieres alquilar?',
+        '¡Muy bien! Podemos ayudarte a rentar tu inmueble. ¿De qué tipo de propiedad se trata?',
+        '¡Perfecto! Te asistiremos para alquilar tu propiedad. ¿Qué tipo de inmueble deseas rentar?'
+    ],
+    'info_venta': [
+        'Aquí tienes información importante sobre el proceso de venta:',
+        'Te muestro los datos más relevantes sobre la venta de propiedades:',
+        'A continuación encontrarás información clave sobre el proceso de venta:'
+    ],
+    'continuar_proceso_venta': [
+        '¡Excelente! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?',
+        '¡Perfecto! Vamos a iniciar el proceso de venta. ¿Qué clase de propiedad deseas vender?',
+        '¡Muy bien! Para empezar necesitamos saber qué tipo de inmueble quieres vender. ¿Cuál es?'
+    ],
+    'atencion_personalizada': [
+        'Excelente. Continuemos con el proceso para brindarte asistencia personalizada. ¿Qué tipo de propiedad buscas?',
+        'Perfecto. Vamos a ofrecerte atención personalizada. ¿Qué tipo de inmueble te interesa?',
+        'Muy bien. Te daremos un servicio personalizado. ¿Qué clase de propiedad estás buscando?'
+    ],
+    'contacto_directo': [
+        'Perfecto, aquí tienes nuestra información de contacto para que puedas hablar directamente con un asesor especializado.',
+        'Excelente, te proporciono nuestros datos de contacto para que hables con uno de nuestros asesores expertos.',
+        'Muy bien, aquí están nuestros contactos para que puedas comunicarte directamente con un profesional de nuestro equipo.'
+    ],
+    'tipo_propiedad_comprar': [
+        'Excelente elección, {tipo}. ¿En qué zona te gustaría buscar?',
+        'Perfecto, {tipo}. ¿En qué zona prefieres buscar tu propiedad?',
+        'Muy buena opción, {tipo}. ¿Qué zona te interesa más?'
+    ],
+    'tipo_propiedad_alquilar': [
+        'Excelente elección, {tipo}. ¿En qué zona te gustaría buscar?',
+        'Perfecto, {tipo}. ¿En qué zona prefieres buscar el alquiler?',
+        'Muy buena opción, {tipo}. ¿Qué zona te interesa para alquilar?'
+    ],
+    'tipo_propiedad_alquilar_mi': [
+        'Perfecto, has seleccionado {tipo}. Para continuar con el alquiler de tu propiedad, necesitamos más información. ¿En qué zona se encuentra?',
+        'Excelente, {tipo}. Para avanzar con el proceso de alquiler, necesitamos algunos datos más. ¿En qué zona está ubicada?',
+        'Muy bien, {tipo}. Necesitamos más detalles para alquilar tu inmueble. ¿En qué zona se encuentra?'
+    ],
+    'tipo_propiedad_vender': [
+        'Perfecto, has seleccionado {tipo}. Para continuar con la venta, necesitamos más información. ¿En qué zona se encuentra tu propiedad?',
+        'Excelente, {tipo}. Para avanzar con el proceso de venta, necesitamos algunos datos más. ¿En qué zona está ubicada?',
+        'Muy bien, {tipo}. Necesitamos más detalles para la venta. ¿En qué zona se encuentra tu inmueble?'
+    ],
+    'zona_comprar': [
+        'Perfecto, zona {zona}. Esta información es muy valiosa para nosotros ya que podemos trabajar en tu caso antes de contactarte. Ahora necesitamos algunos datos de contacto. ¿Cuál es tu nombre completo?',
+        'Excelente, zona {zona}. Con esta información podremos preparar opciones antes de contactarte. Por favor, dinos ¿cuál es tu nombre completo?',
+        'Muy bien, zona {zona}. Esto nos ayudará a buscar las mejores opciones para ti. ¿Podrías indicarnos tu nombre completo?'
+    ],
+    'zona_alquilar': [
+        'Perfecto, zona {zona}. Esta información nos ayudará a preparar opciones de alquiler antes de contactarte. Ahora necesitamos algunos datos de contacto. ¿Cuál es tu nombre completo?',
+        'Excelente, zona {zona}. Con esto podremos buscar las mejores opciones de alquiler para ti. Por favor, dinos ¿cuál es tu nombre completo?',
+        'Muy bien, zona {zona}. Esto nos ayudará a encontrar el alquiler perfecto. ¿Podrías indicarnos tu nombre completo?'
+    ],
+    'zona_alquilar_mi': [
+        'Excelente, zona {zona}. Queremos darte el mejor servicio para alquilar tu propiedad. Necesitaremos algunos datos adicionales para que un asesor te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?',
+        'Perfecto, zona {zona}. Para ofrecerte la mejor atención en el alquiler de tu inmueble, necesitamos algunos datos de contacto. Un asesor se pondrá en contacto contigo. ¿Cuál es tu nombre completo?',
+        'Muy bien, zona {zona}. Nos gustaría poder contactarte sin compromiso para ayudarte con el alquiler. Necesitamos algunos datos. ¿Cuál es tu nombre completo?'
+    ],
+    'zona_vender': [
+        'Excelente, zona {zona}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?',
+        'Perfecto, zona {zona}. Para ofrecerte la mejor atención, necesitamos algunos datos de contacto. Un asesor se pondrá en contacto contigo. ¿Cuál es tu nombre completo?',
+        'Muy bien, zona {zona}. Nos gustaría poder contactarte sin compromiso. Necesitamos algunos datos. ¿Cuál es tu nombre completo?'
+    ],
+    'datos_recibidos': [
+        'Datos recibidos. Continuando con el proceso...',
+        'Información recibida. Procesando tus datos...',
+        'Datos guardados. Avanzando con el proceso...'
+    ],
+    'preguntas_frecuentes': [
+        'Aquí tienes las preguntas más frecuentes:',
+        'Te muestro las consultas más comunes:',
+        'Estas son las preguntas que más nos hacen:'
+    ],
+    'no_entiendo': [
+        'No entiendo tu consulta. Por favor, selecciona una de las opciones disponibles o escribe "preguntas frecuentes" para más información.',
+        'Disculpa, no he comprendido tu mensaje. Por favor, elige una opción del menú o escribe "preguntas frecuentes" para ayudarte.',
+        'Perdona, no entiendo lo que me indicas. Selecciona una de las opciones que te muestro o escribe "preguntas frecuentes" para más detalles.'
+    ],
+    'datos_enviados_exito': [
+        'Datos enviados correctamente. Un asesor se pondrá en contacto contigo pronto.',
+        'Información recibida con éxito. Pronto recibirás la llamada de uno de nuestros asesores.',
+        '¡Perfecto! Tus datos han sido enviados. Un especialista te contactará en breve.'
+    ],
+    'error_envio': [
+        'Error al enviar los datos. Por favor, intenta de nuevo.',
+        'Ha ocurrido un problema al enviar tu información. Por favor, inténtalo nuevamente.',
+        'No hemos podido enviar tus datos. Por favor, intenta otra vez.'
+    ],
+    'faltan_datos': [
+        'Nombre y teléfono son requeridos',
+        'Por favor, proporciona tu nombre y teléfono',
+        'Necesitamos tu nombre y número de teléfono para continuar'
+    ]
+}
+
+def obtener_mensaje(clave, **kwargs):
+    """Obtiene un mensaje aleatorio de las alternativas disponibles y reemplaza variables"""
+    mensajes = MENSAJES_VARIADOS.get(clave, [''])
+    mensaje = random.choice(mensajes)
+    if kwargs:
+        mensaje = mensaje.format(**kwargs)
+    return mensaje
+
 # Datos de ejemplo para las opciones
 opciones_principales = {
     "vender": {
         "titulo": "Vender mi propiedad",
         "descripcion": "Te ayudamos a vender tu propiedad al mejor precio",
-        "mensaje": "Perfecto, estaremos encantados de ayudarte con el proceso de venta. ¿Necesitas información acerca de documentación y trámites necesarios, o prefieres continuar con el proceso?",
+        "mensaje_clave": "vender",
         "opciones": ["Sí, quiero información", "Continuar con el proceso"]
     },
     "comprar": {
         "titulo": "Comprar propiedad",
         "descripcion": "Encuentra la propiedad perfecta para ti",
-        "mensaje": "Muy bien, puedes consultar los inmuebles disponibles en nuestra web. Si lo prefieres puedes elegir una de estas dos opciones:",
-        "opciones": ["Continuar con atención personalizada", "Contactar directamente"]
+        "mensaje_clave": "comprar",
+        "opciones": ["Seguir con el proceso", "Contactar directamente"]
     },
     "alquilar": {
         "titulo": "Alquilar propiedad",
         "descripcion": "Encuentra el lugar perfecto para alquilar",
-        "mensaje": "¡Genial! Te ayudaremos a encontrar el lugar perfecto para alquilar. ¿Qué tipo de propiedad necesitas?",
-        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
+        "mensaje_clave": "alquilar",
+        "opciones": ["Seguir con el proceso", "Contactar directamente"]
     },
     "alquilar_mi_propiedad": {
         "titulo": "Alquilar mi propiedad",
         "descripcion": "Renta tu propiedad de forma segura",
-        "mensaje": "¡Excelente! Te ayudaremos a alquilar tu propiedad. ¿Qué tipo de propiedad quieres alquilar?",
-        "opciones": ["Vivienda", "Terreno", "Nave industrial", "Local comercial"]
+        "mensaje_clave": "alquilar_mi_propiedad",
+        "opciones": ["Vivienda", "Local comercial","Nave industrial", "Terreno", "Finca Rústica"]
     }
 }
 
@@ -202,7 +330,7 @@ def chat():
     if mensaje_usuario in ['hola', 'hi', 'buenos días', 'buenas tardes', 'buenas noches', 'inicio', 'empezar']:
         return jsonify({
             'tipo': 'bienvenida',
-            'mensaje': '¡Hola! Bienvenido a Metro Cuadrado Mérida. ¿En qué podemos ayudarte hoy?',
+            'mensaje': obtener_mensaje('bienvenida'),
             'opciones': [
                 {'id': 'vender', 'texto': 'Vender mi propiedad'},
                 {'id': 'comprar', 'texto': 'Comprar propiedad'},
@@ -220,7 +348,7 @@ def chat():
             
             return jsonify({
                 'tipo': 'opcion_seleccionada',
-                'mensaje': opcion_data['mensaje'],
+                'mensaje': obtener_mensaje(opcion_data['mensaje_clave']),
                 'opciones': [{'id': tipo, 'texto': tipo} for tipo in opcion_data['opciones']],
                 'contexto': opcion_id
             })
@@ -232,7 +360,7 @@ def chat():
         print("Detectado: Sí, quiero información")
         return jsonify({
             'tipo': 'preguntas_frecuentes_vender',
-            'mensaje': 'Aquí tienes información importante sobre el proceso de venta:',
+            'mensaje': obtener_mensaje('info_venta'),
             'preguntas': preguntas_frecuentes_vender
         })
     
@@ -240,30 +368,38 @@ def chat():
         print("Detectado: Continuar con el proceso")
         return jsonify({
             'tipo': 'opcion_seleccionada',
-            'mensaje': '¡Excelente! Para vender tu propiedad necesitamos algunos datos básicos. ¿Qué tipo de propiedad quieres vender?',
-            'opciones': [{'id': tipo, 'texto': tipo} for tipo in ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']],
+            'mensaje': obtener_mensaje('continuar_proceso_venta'),
+            'opciones': [{'id': tipo, 'texto': tipo} for tipo in ['Vivienda', 'Local comercial', 'Nave industrial', 'Terreno', 'Finca Rústica']],
             'contexto': 'vender_proceso'
         })
     
-    # Manejo específico para opciones de comprar
-    if mensaje_original == 'Continuar con atención personalizada':
-        print("Detectado: Continuar con atención personalizada (comprar)")
+    # Manejo específico para opciones de comprar y alquilar
+    if mensaje_original == 'Seguir con el proceso':
+        # Obtener contexto del usuario para saber si es comprar o alquilar
+        contexto_usuario = user_contexts.get(client_ip, 'comprar')
+        print(f"Detectado: Seguir con el proceso ({contexto_usuario})")
+        
+        if contexto_usuario == 'alquilar':
+            contexto_proceso = 'alquilar_proceso'
+        else:  # comprar por defecto
+            contexto_proceso = 'comprar_proceso'
+        
         return jsonify({
             'tipo': 'opcion_seleccionada',
-            'mensaje': 'Excelente. Continuemos con el proceso para brindarte asistencia personalizada. ¿Qué tipo de propiedad buscas?',
-            'opciones': [{'id': tipo, 'texto': tipo} for tipo in ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']],
-            'contexto': 'comprar_proceso'
+            'mensaje': obtener_mensaje('atencion_personalizada'),
+            'opciones': [{'id': tipo, 'texto': tipo} for tipo in ['Vivienda', 'Local comercial', 'Nave industrial','Terreno', 'Finca Rústica']],
+            'contexto': contexto_proceso
         })
     
     if mensaje_original == 'Contactar directamente':
         print("Detectado: Contactar directamente")
         return jsonify({
             'tipo': 'contacto_directo',
-            'mensaje': 'Perfecto, aquí tienes nuestra información de contacto para que puedas hablar directamente con un asesor especializado.'
+            'mensaje': obtener_mensaje('contacto_directo')
         })
     
-    # Manejo de tipos de propiedad (para venta y compra)
-    tipos_propiedad = ['Vivienda', 'Terreno', 'Nave industrial', 'Local comercial']
+    # Manejo de tipos de propiedad (para venta, compra y alquiler)
+    tipos_propiedad = ['Vivienda', 'Local comercial','Nave industrial', 'Terreno', 'Finca Rústica']
     if mensaje_original in tipos_propiedad:
         print(f"Detectado tipo de propiedad: {mensaje_original}")
         
@@ -274,10 +410,16 @@ def chat():
         # Determinar el contexto y mensaje según la opción principal seleccionada
         if contexto_usuario == 'comprar':
             contexto_actual = 'comprar_zona'
-            mensaje = f'Excelente elección, {mensaje_original}. ¿En qué zona te gustaría buscar?'
+            mensaje = obtener_mensaje('tipo_propiedad_comprar', tipo=mensaje_original)
+        elif contexto_usuario == 'alquilar':
+            contexto_actual = 'alquilar_zona'
+            mensaje = obtener_mensaje('tipo_propiedad_alquilar', tipo=mensaje_original)
+        elif contexto_usuario == 'alquilar_mi_propiedad':
+            contexto_actual = 'alquilar_mi_zona'
+            mensaje = obtener_mensaje('tipo_propiedad_alquilar_mi', tipo=mensaje_original)
         else:  # vender por defecto
             contexto_actual = 'vender_zona'
-            mensaje = f'Perfecto, has seleccionado {mensaje_original}. Para continuar con la venta, necesitamos más información. ¿En qué zona se encuentra tu propiedad?'
+            mensaje = obtener_mensaje('tipo_propiedad_vender', tipo=mensaje_original)
         
         return jsonify({
             'tipo': 'opcion_seleccionada',
@@ -286,7 +428,7 @@ def chat():
             'contexto': contexto_actual
         })
     
-    # Manejo de zonas (para venta y compra)
+    # Manejo de zonas (para venta, compra y alquiler)
     zonas = ['Centro', 'Norte', 'Bodegones-Sur', 'Nueva Ciudad', 'Sindicales']
     if mensaje_original in zonas:
         print(f"Detectada zona: {mensaje_original}")
@@ -297,9 +439,13 @@ def chat():
         
         # Mensaje según el contexto
         if contexto_usuario == 'comprar':
-            mensaje = f'Perfecto, zona {mensaje_original}. Esta información es muy valiosa para nosotros ya que podemos trabajar en tu caso antes de contactarte. Ahora necesitamos algunos datos de contacto. ¿Cuál es tu nombre completo?'
+            mensaje = obtener_mensaje('zona_comprar', zona=mensaje_original)
+        elif contexto_usuario == 'alquilar':
+            mensaje = obtener_mensaje('zona_alquilar', zona=mensaje_original)
+        elif contexto_usuario == 'alquilar_mi_propiedad':
+            mensaje = obtener_mensaje('zona_alquilar_mi', zona=mensaje_original)
         else:  # vender por defecto
-            mensaje = f'Excelente, zona {mensaje_original}. Queremos darte el mejor servicio. Necesitaremos algunos datos adicionales para que un asesor inmobiliario te pueda contactar sin ningún compromiso. ¿Cuál es tu nombre completo?'
+            mensaje = obtener_mensaje('zona_vender', zona=mensaje_original)
         
         return jsonify({
             'tipo': 'solicitar_datos',
@@ -313,21 +459,21 @@ def chat():
         # devolvemos una respuesta genérica para que el frontend lo procese
         return jsonify({
             'tipo': 'texto',
-            'mensaje': 'Datos recibidos. Continuando con el proceso...'
+            'mensaje': obtener_mensaje('datos_recibidos')
         })
     
     # Preguntas frecuentes
     if 'preguntas frecuentes' in mensaje_usuario or 'faq' in mensaje_usuario:
         return jsonify({
             'tipo': 'preguntas_frecuentes',
-            'mensaje': 'Aquí tienes las preguntas más frecuentes:',
+            'mensaje': obtener_mensaje('preguntas_frecuentes'),
             'preguntas': preguntas_frecuentes
         })
     
     # Respuesta por defecto
     return jsonify({
         'tipo': 'texto',
-        'mensaje': 'No entiendo tu consulta. Por favor, selecciona una de las opciones disponibles o escribe "preguntas frecuentes" para más información.'
+        'mensaje': obtener_mensaje('no_entiendo')
     })
 
 @app.route('/api/faq')
@@ -350,7 +496,7 @@ def enviar_datos():
             print("ERROR: Faltan datos requeridos (nombre o teléfono)")
             return jsonify({
                 'success': False,
-                'message': 'Nombre y teléfono son requeridos'
+                'message': obtener_mensaje('faltan_datos')
             }), 400
         
         print("Datos válidos, procediendo a enviar email...")
@@ -362,13 +508,13 @@ def enviar_datos():
             print("Email enviado exitosamente")
             return jsonify({
                 'success': True,
-                'message': 'Datos enviados correctamente. Un asesor se pondrá en contacto contigo pronto.'
+                'message': obtener_mensaje('datos_enviados_exito')
             })
         else:
             print("Error al enviar email")
             return jsonify({
                 'success': False,
-                'message': 'Error al enviar los datos. Por favor, intenta de nuevo.'
+                'message': obtener_mensaje('error_envio')
             }), 500
             
     except Exception as e:

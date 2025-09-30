@@ -190,8 +190,8 @@ function handleBotResponse(data) {
             addBotMessage(data.mensaje);
             currentContext = data.contexto;
             if (data.opciones) {
-                // Si el contexto es comprar, mostramos de inmediato la opción de consultar la web
-                if (currentContext === 'comprar') {
+                // Si el contexto es comprar o alquilar, mostramos de inmediato la opción de consultar la web
+                if (currentContext === 'comprar' || currentContext === 'alquilar') {
                     setTimeout(() => {
                         showWebsiteOption();
                     }, 400);
@@ -406,7 +406,7 @@ function selectSubOption(optionId) {
     
     // Manejo especial para las opciones de comprar
     if (currentContext === 'comprar') {
-        if (optionId === 'Continuar con atención personalizada') {
+        if (optionId === 'Seguir con el proceso') {
             addBotMessage('Excelente. Continuemos con el proceso para brindarte asistencia personalizada. ¿Qué tipo de propiedad buscas?');
             showPropertyTypeOptions();
             return;
@@ -439,14 +439,6 @@ function selectSubOption(optionId) {
     
     addBotMessage(responseMessage);
     
-    // Para alquilar (no comprar aquí), mostrar opción adicional de consultar en el sitio web
-    // En comprar ya se muestra en la primera interacción
-    if (currentContext === 'alquilar') {
-        setTimeout(() => {
-            showWebsiteOption();
-        }, 1000);
-    }
-    
     // Mostrar opciones de zona
     showZoneOptions();
 }
@@ -461,6 +453,14 @@ function showWebsiteOption() {
     const websiteCard = document.createElement('div');
     websiteCard.className = 'website-option-card';
     
+    // Adaptar el texto según el contexto
+    let textoAccion = 'Ver inmuebles disponibles';
+    if (currentContext === 'alquilar') {
+        textoAccion = 'Ver propiedades en alquiler';
+    } else if (currentContext === 'comprar') {
+        textoAccion = 'Ver propiedades en venta';
+    }
+    
     websiteCard.innerHTML = `
         <div class="website-option-icon">
             <i class="fas fa-globe"></i>
@@ -470,7 +470,7 @@ function showWebsiteOption() {
             <p>Explora nuestro catálogo completo de propiedades en m2merida.com</p>
             <button class="website-btn" onclick="openWebsite()">
                 <i class="fas fa-external-link-alt"></i>
-                Ver inmuebles disponibles
+                ${textoAccion}
             </button>
         </div>
     `;
@@ -506,10 +506,10 @@ function showContinueOptions() {
     const options = [
         {
             icon: 'fas fa-map-marker-alt',
-            title: 'Continuar con asistencia personalizada',
+            title: 'Seguir con el proceso',
             description: 'Te ayudamos a encontrar la propiedad perfecta',
             action: () => {
-                addUserMessage('Continuar con asistencia personalizada');
+                addUserMessage('Seguir con el proceso');
                 addBotMessage('Excelente. Continuemos con el proceso para brindarte asistencia personalizada.');
                 showZoneOptions();
             }
@@ -834,9 +834,7 @@ function showConsultaResumen() {
         Un asesor especializado de Metro Cuadrado Mérida se pondrá en contacto contigo en las próximas 24 horas.
         
         Mientras tanto, puedes:
-        • Revisar nuestras preguntas frecuentes
-        • Contactarnos directamente
-        • Iniciar una nueva consulta
+ 
     `;
     
     addBotMessage(resumen);
@@ -908,16 +906,55 @@ function showContactInfo() {
         addUserMessage('Información de Contacto');
     }
     
-    const contactInfo = `
-        📞 Teléfono: +52 (999) 123-4567
-        📧 Email: info@metrocua.com
-        🏢 Dirección: Av. Paseo de Montejo, Mérida, Yucatán
-        ⏰ Horarios: Lunes a Viernes 9:00 - 18:00, Sábados 9:00 - 14:00
-        
-        ¡Gracias por contactar Metro Cuadrado Mérida! Un asesor especializado se pondrá en contacto contigo pronto.
+    const chatMessages = document.getElementById('chatMessages');
+    
+    // Crear mensaje del bot
+    const botMessage = document.createElement('div');
+    botMessage.className = 'message bot-message';
+    botMessage.innerHTML = `
+        <div class="message-avatar">
+            <img src="/static/logoraul.png" alt="Bot" class="logo-img">
+        </div>
+        <div class="message-content">
+            <p>Aquí tienes nuestros datos de contacto:</p>
+        </div>
+    `;
+    chatMessages.appendChild(botMessage);
+    
+    // Crear contenedor de contacto con botones
+    const contactContainer = document.createElement('div');
+    contactContainer.className = 'website-option-container';
+    contactContainer.style.marginTop = '10px';
+    
+    const contactCard = document.createElement('div');
+    contactCard.className = 'website-option-card';
+    contactCard.style.flexDirection = 'column';
+    contactCard.style.gap = '12px';
+    
+    contactCard.innerHTML = `
+        <div style="display: flex; gap: 12px; width: 100%; flex-wrap: wrap;">
+            <a href="tel:+34622304050" class="website-btn" style="flex: 1; min-width: 150px; text-decoration: none; justify-content: center;">
+                <i class="fas fa-phone"></i>
+                Llamar: 622 304 050
+            </a>
+            <a href="mailto:info@m2merida.com" class="website-btn" style="flex: 1; min-width: 150px; text-decoration: none; justify-content: center;">
+                <i class="fas fa-envelope"></i>
+                info@m2merida.com
+            </a>
+        </div>
+        <div style="text-align: center; padding: 10px 0;">
+            <p style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">O si lo prefieres puedes pasar por nuestra oficina en Calle Cervantes:</p>
+            <a href="https://www.google.com/maps/dir//C.+Miguel+de+Cervantes,+13,+06800+M%C3%A9rida,+Badajoz/@38.9190211,-6.4257773,19663m/data=!3m1!1e3!4m8!4m7!1m0!1m5!1m1!1s0xd1421454e244b7f:0x9e93fc65fd4d1fd9!2m2!1d-6.3433764!2d38.9190501?entry=ttu&g_ep=EgoyMDI1MDkyNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="website-btn" style="text-decoration: none; display: inline-flex;">
+                <i class="fas fa-map-marker-alt"></i>
+                Ver en Google Maps
+            </a>
+        </div>
     `;
     
-    addBotMessage(contactInfo);
+    contactContainer.appendChild(contactCard);
+    chatMessages.appendChild(contactContainer);
+    
+    scrollToBottom();
     
     // Solo mostrar opción de reinicio si no viene del botón inferior
     if (!isFromButton) {
