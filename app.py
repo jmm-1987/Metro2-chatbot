@@ -313,6 +313,10 @@ Sistema de Chatbot Metro Cuadrado Merida
 def index():
     return render_template('index.html')
 
+@app.route('/ejemplo-integracion')
+def ejemplo_integracion():
+    return render_template('ejemplo_integracion.html')
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.get_json()
@@ -339,9 +343,9 @@ def chat():
             ]
         })
     
-    # Manejo de opciones principales
+    # Manejo de opciones principales (comparación exacta para evitar confusiones)
     for opcion_id, opcion_data in opciones_principales.items():
-        if opcion_id in mensaje_usuario or opcion_data['titulo'].lower() in mensaje_usuario:
+        if mensaje_usuario == opcion_id or opcion_data['titulo'].lower() == mensaje_usuario:
             # Establecer contexto del usuario
             user_contexts[client_ip] = opcion_id
             print(f"Estableciendo contexto para IP {client_ip}: {opcion_id}")
