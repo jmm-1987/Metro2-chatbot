@@ -121,20 +121,9 @@
             }
         }
 
+        /* Ocultamos la cabecera para maximizar el espacio del iframe */
         #m2-chatbot-header {
-            background: #2b2a28;
-            color: #d4af37;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #d4af37;
-        }
-
-        #m2-chatbot-header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
+            display: none;
         }
 
         #m2-chatbot-close {
@@ -158,7 +147,7 @@
 
         #m2-chatbot-iframe {
             width: 100%;
-            height: calc(100% - 57px);
+            height: 100%;
             border: none;
         }
 
