@@ -6,12 +6,20 @@
 (function() {
     'use strict';
     
+    // Obtener la URL del chatbot automáticamente desde donde se cargó el script
+    const scriptSrc = document.currentScript?.src || '';
+    const chatbotBaseUrl = scriptSrc ? new URL(scriptSrc).origin : 'https://raul-chatbot.onrender.com';
+    
+    console.log('🤖 Widget Metro Cuadrado Mérida - Inicializando...');
+    console.log('📍 Script cargado desde:', scriptSrc);
+    console.log('🌐 URL del chatbot:', chatbotBaseUrl);
+    
     // Configuración del widget
     const config = {
         buttonColor: '#d4af37',
         buttonPosition: 'bottom-right', // 'bottom-right' o 'bottom-left'
         buttonText: '💬',
-        chatbotUrl: window.location.origin, // URL del chatbot
+        chatbotUrl: chatbotBaseUrl, // URL del chatbot (detectada automáticamente)
         zIndex: 9999
     };
 
@@ -188,6 +196,9 @@
 
     // Crear el HTML del widget
     function createWidget() {
+        const iframeUrl = `${config.chatbotUrl}/`;
+        console.log('🖼️  URL del iframe:', iframeUrl);
+        
         const widgetHTML = `
             <div id="m2-chatbot-widget">
                 <button id="m2-chatbot-button" class="pulse" aria-label="Abrir chat">
@@ -200,7 +211,7 @@
                     </div>
                     <iframe 
                         id="m2-chatbot-iframe" 
-                        src="${config.chatbotUrl}"
+                        src="${iframeUrl}"
                         title="Chatbot Metro Cuadrado Mérida"
                         allow="clipboard-write"
                         loading="lazy">
@@ -261,16 +272,22 @@
 
     // Inicializar el widget cuando el DOM esté listo
     function init() {
+        console.log('🔧 Inicializando widget, readyState:', document.readyState);
         if (document.readyState === 'loading') {
+            console.log('⏳ DOM cargando, esperando DOMContentLoaded...');
             document.addEventListener('DOMContentLoaded', function() {
+                console.log('✅ DOM listo, creando widget...');
                 injectStyles();
                 createWidget();
                 setupEvents();
+                console.log('🎉 Widget creado exitosamente');
             });
         } else {
+            console.log('✅ DOM ya listo, creando widget inmediatamente...');
             injectStyles();
             createWidget();
             setupEvents();
+            console.log('🎉 Widget creado exitosamente');
         }
     }
 

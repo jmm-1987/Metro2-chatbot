@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Widget Externo - Metro Cuadrado Mérida</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .info {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .info p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .status {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+            margin-bottom: 20px;
+        }
+
+        .status h3 {
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .console-output {
+            background: #2d2d2d;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .console-output div {
+            margin-bottom: 5px;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            text-align: center;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .highlight {
+            background: yellow;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba del Widget Externo</h1>
+        
+        <div class="info">
+            <h2>📋 Instrucciones:</h2>
+            <p>1. Abre la consola del navegador (<code>F12</code> → pestaña "Console")</p>
+            <p>2. Busca el <span class="highlight">botón dorado flotante</span> en la esquina inferior derecha</p>
+            <p>3. Haz clic en el botón para abrir el chatbot</p>
+            <p>4. Verifica que aparezca en un iframe y funcione correctamente</p>
+        </div>
+
+        <div class="status">
+            <h3>🔍 ¿Qué buscar en la consola?</h3>
+            <p><strong>Si todo funciona bien, verás:</strong></p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>🤖 Widget Metro Cuadrado Mérida - Inicializando...</li>
+                <li>📍 Script cargado desde: https://raul-chatbot.onrender.com/...</li>
+                <li>🌐 URL del chatbot: https://raul-chatbot.onrender.com</li>
+                <li>✅ DOM ya listo, creando widget inmediatamente...</li>
+                <li>🎉 Widget creado exitosamente</li>
+            </ul>
+            <p style="margin-top: 10px;"><strong>Si hay problemas, verás:</strong></p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>❌ Errores de CORS</li>
+                <li>❌ Errores de carga de script</li>
+                <li>❌ Errores de sintaxis JavaScript</li>
+            </ul>
+        </div>
+
+        <div class="arrow">
+            👇 Busca el botón flotante aquí abajo 👇
+        </div>
+
+        <div style="text-align: center; color: #666; margin-top: 20px;">
+            <p><strong>Nota:</strong> Esta es una página de prueba completamente externa.</p>
+            <p>El widget se carga desde: <code>https://raul-chatbot.onrender.com/static/js/widget.js</code></p>
+        </div>
+    </div>
+
+    <!-- AQUÍ SE CARGA EL WIDGET DESDE EL SERVIDOR DE RENDER -->
+    <script src="https://raul-chatbot.onrender.com/static/js/widget.js"></script>
+
+    <!-- Script para capturar logs de consola y mostrarlos en la página -->
+    <script>
+        // Interceptar console.log para mostrar en la página también
+        const originalLog = console.log;
+        const consoleOutput = document.createElement('div');
+        consoleOutput.className = 'console-output';
+        consoleOutput.innerHTML = '<strong>📋 Console Output:</strong><br>';
+        document.querySelector('.container').appendChild(consoleOutput);
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            const div = document.createElement('div');
+            div.textContent = message;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        // Verificar si el widget se cargó
+        setTimeout(() => {
+            const widgetButton = document.getElementById('m2-chatbot-button');
+            if (widgetButton) {
+                console.log('✅ ¡Widget encontrado en el DOM!');
+            } else {
+                console.log('❌ Widget NO encontrado en el DOM');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
