@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import json
 from datetime import datetime
 import requests
@@ -11,6 +12,17 @@ except ImportError:
     from config_production import EMAIL_CONFIG
 
 app = Flask(__name__)
+
+# Configurar CORS para permitir el widget en otros sitios web
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",  # Permite todos los orígenes (o especifica dominios concretos)
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+        "expose_headers": ["Content-Type"],
+        "supports_credentials": False
+    }
+})
 
 # Variable global para rastrear el contexto actual del usuario
 user_contexts = {}

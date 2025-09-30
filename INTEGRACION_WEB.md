@@ -179,12 +179,36 @@ Si tienes problemas con la integración:
 
 ---
 
-## 🔐 Seguridad
+## 🔐 Seguridad y CORS
 
+### Configuración CORS
+El chatbot está configurado con **CORS habilitado** para permitir su integración en cualquier sitio web.
+
+**¿Qué significa esto?**
+- ✅ El widget puede cargarse desde cualquier dominio
+- ✅ Los archivos estáticos (widget.js) son accesibles externamente
+- ✅ Las peticiones API funcionan desde otros sitios web
+- ✅ El iframe puede cargarse sin restricciones
+
+### Seguridad
 - ✅ El widget solo carga contenido de tu propio dominio
 - ✅ No recopila datos del sitio web donde se integra
 - ✅ Funciona de forma aislada en un iframe
 - ✅ No interfiere con el funcionamiento de la web existente
+- ✅ Si quieres restringir a dominios específicos, puedes modificar la configuración CORS en `app.py`
+
+### Restringir a dominios específicos (Opcional)
+Si quieres que el widget **solo funcione en tu web**, edita `app.py`:
+
+```python
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://tudominio.com", "https://www.tudominio.com"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+    }
+})
+```
 
 ---
 
